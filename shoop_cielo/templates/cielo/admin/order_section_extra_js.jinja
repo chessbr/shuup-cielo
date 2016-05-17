@@ -1,0 +1,54 @@
+<script>
+    function refresh(pk){
+        $.ajax({
+            type: "POST",
+            url: "{{ url('shoop_admin:cielo.transaction-refresh') }}",
+            data: {
+                "id": pk,
+                "csrfmiddlewaretoken": '{{ csrf_token }}',
+            },
+            success: function(data){
+                $('#transaction-'+pk).html(data);
+            },
+            error: function(){
+                alert("{% trans %}There was an error refreshing the transaction.{% endtrans %}")
+            },
+        });
+    }
+
+    function capture(pk){
+        $.ajax({
+            type: "POST",
+            url: "{{ url('shoop_admin:cielo.transaction-capture') }}",
+            data: {
+                "id": pk,
+                "amount": $('#capture-'+pk+'-amount').val(),
+                "csrfmiddlewaretoken": '{{ csrf_token }}',
+            },
+            success: function(data){
+                $('#transaction-'+pk).html(data);
+            },
+            error: function(data){
+                alert("{% trans %}There was an error capturing the transaction.{% endtrans %}: " + data.responseText)
+            },
+        });
+    }
+
+    function cancel(pk){
+        $.ajax({
+            type: "POST",
+            url: "{{ url('shoop_admin:cielo.transaction-cancel') }}",
+            data: {
+                "id": pk,
+                "amount": $('#cancel-'+pk+'-amount').val(),
+                "csrfmiddlewaretoken": '{{ csrf_token }}',
+            },
+            success: function(data){
+                $('#transaction-'+pk).html(data);
+            },
+            error: function(data){
+                alert("{% trans %}There was an error canceling the transaction.{% endtrans %}: " + data.responseText)
+            },
+        });
+    }
+</script>

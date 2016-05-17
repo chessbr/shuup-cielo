@@ -1,0 +1,76 @@
+{% macro cielo_info_row(header, value, url=None, class="", content_class="") %}
+    {% if value is defined and value is not none and value != "" %}
+        <dt>{{ header }}</dt>
+        <dd{% if class %} class="{{ class }}"{% endif %}>
+            {%- if url %}<a href="{{ url }}">{% endif -%}
+            <span {% if content_class %}class="{{ content_class }}"{% endif %}>{{ value }}</span>
+            {%- if url %}</a>{% endif -%}
+        </dd>
+        {% if caller %}
+            <dd>{{ caller() }}</dd>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+
+{{ cielo_info_row(_("TID"), transaction.tid) }}
+{{ cielo_info_row(_("Create date"), transaction.creation_date|datetime) }}
+
+{# aprovada #}
+{% if transaction.status == CieloTransactionStatus.Authorized %}
+{{ cielo_info_row(_("Status"), transaction.status, content_class="label label-info") }}
+
+{# negada #}
+{% elif transaction.status == CieloTransactionStatus.NotAuthorized %}
+{{ cielo_info_row(_("Status"), transaction.status, content_class="label label-warning") }}
+
+{# capturada #}
+{% elif transaction.status == CieloTransactionStatus.Captured %}
+{{ cielo_info_row(_("Status"), transaction.status, content_class="label label-success") }}
+
+{# cancelada #}
+{% elif transaction.status in (CieloTransactionStatus.Cancelled, CieloTransactionStatus.Cancelling) %}
+{{ cielo_info_row(_("Status"), transaction.status, content_class="label label-danger") }}
+
+{% else %}
+{{ cielo_info_row(_("Status"), transaction.status, content_class="label label-default") }}
+
+{% endif %}
+
+{{ cielo_info_row(_("Last update"), transaction.last_update|datetime) }}
+
+{{ cielo_info_row(_("Holder"), transaction.cc_holder, content_class="text-uppercase text-info") }}
+{{ cielo_info_row(_("Card brand"), transaction.cc_brand, content_class="text-uppercase label label-info") }}
+{{ cielo_info_row(_("Product"), transaction.get_cc_product_display(), content_class="text-uppercase text-info") }}
+{{ cielo_info_row(_("Installments"), transaction.installments|string + 'x ' + (transaction.total / transaction.installments)|money, content_class="text-info") }}
+
+{{ cielo_info_row(_("Total"), transaction.total|money, content_class="text-primary") }}
+{{ cielo_info_row(_("Total captured"), transaction.total_captured|money, content_class="text-success") }}
+{{ cielo_info_row(_("Total canceled"), transaction.total_reversed|money, content_class="text-danger") }}
+
+{{ cielo_info_row(_("Authorization LR"), transaction.authorization_lr) }}
+{{ cielo_info_row(_("Authorization NSU"), transaction.authorization_nsu) }}
+
+{% if transaction.authorization_date %}
+{{ cielo_info_row(_("Authorization date"), transaction.authorization_date|datetime) }}
+{% endif %}
+
+{{ cielo_info_row(_("Authentication ECI"), transaction.authentication_eci, content_class="label label-primary") }}
+
+{% if transaction.authentication_date %}
+{{ cielo_info_row(_("Authentication date"), transaction.authentication_date|datetime) }}
+{% endif %}
+
+<dd>
+    <button class="btn btn-info" id="refresh-{{ transaction.id }}" onclick="refresh({{ transaction.id }});">{% trans %}Refresh{% endtrans %}</button>
+</dd>
+
+<dd>
+    <input type="text" name="capture-{{ transaction.id }}-amount" value="{{ (transaction.total_value-transaction.total_captured_value)|round(2) }}">
+    <button class="btn btn-success" id="capture-{{ transaction.id }}" onclick="capture({{ transaction.id }});">{% trans %}Capture{% endtrans %}</button>
+</dd>
+
+<dd>
+    <input type="text" name="cancel-{{ transaction.id }}-amount" value="{{ (transaction.total_value-transaction.total_reversed_value)|round(2) }}">
+    <button class="btn btn-danger" id="cancel-{{ transaction.id }}" onclick="cancel({{ transaction.id }});">{% trans %}Cancel{% endtrans %}</button>
+</dd>
