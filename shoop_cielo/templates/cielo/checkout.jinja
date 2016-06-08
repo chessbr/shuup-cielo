@@ -1,0 +1,34 @@
+{% extends "shoop/front/checkout/_base.jinja" %}
+{% from "shoop/front/checkout/_buttons.jinja" import default_buttons %}
+
+{% block checkout_phase_content %}
+<form role="form" method="post" action="" id="cielo">
+     {% csrf_token %}
+    
+    <div class="well">
+        <fieldset>
+            <div class="row">
+                <div class="title col-md-9 col-md-offset-3">
+                    <legend>{% trans %}Credit card information{% endtrans %}</legend>
+                </div>
+            </div>
+            <div id="cc_info" class="form-horizontal">
+                {{ bs3.field(form.cc_product, layout="horizontal") }}
+                {{ bs3.field(form.cc_brand, layout="horizontal") }}
+                {{ bs3.field(form.cc_holder, layout="horizontal") }}
+                {{ bs3.field(form.cc_number, layout="horizontal") }}
+                {{ bs3.field(form.cc_security_code, layout="horizontal") }}
+                {{ bs3.field(form.cc_valid_year, layout="horizontal") }}
+                {{ bs3.field(form.cc_valid_month, layout="horizontal") }}
+                {{ bs3.field(form.installments, layout="horizontal") }}
+
+                {% for field in form.hidden_fields() %}
+                    {{ bs3.field(field, layout="horizontal") }}
+                {% endfor %}
+            </div>
+        </fieldset>
+    </div>
+
+    {{ default_buttons() }}
+</form>
+{% endblock %}
