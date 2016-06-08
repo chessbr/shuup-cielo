@@ -1,7 +1,7 @@
 Shoop Cielo
 ===========
 [![Build Status](https://travis-ci.org/rockho-team/shoop-cielo.svg?branch=master)](https://travis-ci.org/rockho-team/shoop-cielo)
-[![Coverage Status](https://coveralls.io/repos/github/rockho-team/shoop-cielo/badge.svg?branch=master)](https://coveralls.io/github/rockho-team/shoop-cielo)
+[![Coverage Status](https://coveralls.io/repos/github/rockho-team/shoop-cielo/badge.svg?branch=master)](https://coveralls.io/github/rockho-team/shoop-cielo?branch=master)
 
 Cielo gateway payment add-on for Shoop
 
