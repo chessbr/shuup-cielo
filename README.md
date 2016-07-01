@@ -1,11 +1,14 @@
-Shoop Cielo
-===========
 [![Build Status](https://travis-ci.org/rockho-team/shoop-cielo.svg?branch=master)](https://travis-ci.org/rockho-team/shoop-cielo)
 [![Coverage Status](https://coveralls.io/repos/github/rockho-team/shoop-cielo/badge.svg?branch=master)](https://coveralls.io/github/rockho-team/shoop-cielo?branch=master)
+[![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](LICENSE)
+
+Shoop Cielo
+===========
 
 Cielo gateway payment add-on for Shoop
 
 ## Compatibility
+* Shuup v4.0.0
 * [Tested on Python 2.7, 3.4 and 3.5](https://travis-ci.org/rockho-team/shoop-cielo)
 * [x] Cielo Webservice specification v 1.5 (through Cielo API https://github.com/allisson/python-cielo-webservice)
 * [ ] Cielo Webservice specification v 3.0 
