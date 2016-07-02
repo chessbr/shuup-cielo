@@ -6,8 +6,8 @@ python:
 install:
   - pip install -U pip
   - pip install coveralls
-  - pip install -e git+https://github.com/shuup/shuup.git@v4.0.0#egg=shoop[everything]
+  - pip install -e git+https://github.com/shuup/shuup.git@master#egg=shuup[everything]
   - pip install -e .
 script:
-  - py.test -ra -vvv --cov-config .coveragerc --cov shoop_cielo shoop_cielo_tests
+  - py.test -ra -vvv --cov-config .coveragerc --cov shuup_cielo shuup_cielo_tests
 after_success: coveralls

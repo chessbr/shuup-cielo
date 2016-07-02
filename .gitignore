@@ -1,6 +1,6 @@
 *.pyc
 *.egg-info/
-shoop_cielo_tests/var/
+shuup_cielo_tests/var/
 *.mo
 .tox
 .coverage
