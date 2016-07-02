@@ -1,2 +1,2 @@
 [run]
-omit = shoop_cielo/migrations/*
+omit = shuup_cielo/migrations/*
