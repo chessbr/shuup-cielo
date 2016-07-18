@@ -6,6 +6,7 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+from __future__ import unicode_literals
 
 from decimal import Decimal
 import logging
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 class CieloCheckoutPhase(CheckoutPhaseViewMixin, FormView):
     template_name = 'cielo/checkout.jinja'
     identifier = 'cielo'
-    title = _(u'Payment information')
+    title = _('Payment information')
     form_class = CieloPaymentForm
 
     def get_initial(self):

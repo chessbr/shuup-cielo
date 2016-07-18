@@ -6,6 +6,7 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+from __future__ import unicode_literals
 
 from enumfields import Enum
 
@@ -20,8 +21,8 @@ CIELO_INSTALLMENT_INFO_KEY = 'cielows15_installment'
 CIELO_TID_INFO_KEY = 'cielows15_tid'
 
 
-INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING = _(u'{0}x of {1} | Total={2})')
-INSTALLMENT_CHOICE_WITH_INTEREST_STRING = _(u'{0}x of {1} | Total={2} | Interest rate: {3}%)')
+INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING = _('{0}x of {1} | Total={2})')
+INSTALLMENT_CHOICE_WITH_INTEREST_STRING = _('{0}x of {1} | Total={2} | Interest rate: {3}%)')
 
 
 class InterestType(object):
@@ -67,95 +68,95 @@ class CieloTransactionStatus(Enum):
     Cancelling = 12
 
     class Labels:
-        Created = _(u'Created')
-        InProgress = _(u'In progress')
-        Authenticated = _(u'Authenticated')
-        NotAuthenticated = _(u'Not authenticated')
-        Authorized = _(u'Authorized')
-        NotAuthorized = _(u'Not authorized')
-        Captured = _(u'Captured')
-        Cancelled = _(u'Cancelled')
-        Authenticating = _(u'Authenticating')
-        Cancelling = _(u'Cancelling')
+        Created = _('Created')
+        InProgress = _('In progress')
+        Authenticated = _('Authenticated')
+        NotAuthenticated = _('Not authenticated')
+        Authorized = _('Authorized')
+        NotAuthorized = _('Not authorized')
+        Captured = _('Captured')
+        Cancelled = _('Cancelled')
+        Authenticating = _('Authenticating')
+        Cancelling = _('Cancelling')
 
 
 CieloErrorMap = {
-    1: _(u'Mensagem inválida'),
-    2: _(u'Credenciais inválidas'),
-    3: _(u'Transação inexistente'),
-    8: _(u'Código de Segurança Inválido'),
-    10: _(u'Inconsistência no envio do cartão'),
-    11: _(u'Modalidade não habilitada'),
-    12: _(u'Número de parcelas inválido'),
-    13: _(u'Flag de autorização automática'),
-    14: _(u'Autorização Direta inválida'),
-    15: _(u'Autorização Direta sem Cartão'),
-    16: _(u'Identificador, TID, inválido'),
-    17: _(u'Código de segurança ausente'),
-    18: _(u'Indicador de código de segurança inconsistente'),
-    19: _(u'URL de Retorno não fornecida'),
-    20: _(u'Status não permite autorização'),
-    21: _(u'Prazo de autorização vencido'),
-    22: _(u'Número de parcelas inválido'),
-    25: _(u'Encaminhamento a autorização não permitido'),
-    30: _(u'Status inválido para captura'),
-    31: _(u'Prazo de captura vencido'),
-    32: _(u'Valor de captura inválido'),
-    33: _(u'Falha ao capturar'),
-    34: _(u'Valor da taxa de embarque obrigatório'),
-    35: _(u'Bandeira inválida para utilização da Taxa de Embarque'),
-    36: _(u'Produto inválido para utilização da Taxa de Embarque'),
-    40: _(u'Prazo de cancelamento vencido'),
-    42: _(u'Falha ao cancelar'),
-    43: _(u'Valor de cancelamento é maior que valor autorizado.'),
-    51: _(u'Recorrência Inválida'),
-    52: _(u'Token Inválido'),
-    53: _(u'Recorrência não habilitada'),
-    54: _(u'Transação com Token inválida'),
-    55: _(u'Número do cartão não fornecido'),
-    56: _(u'Validade do cartão não fornecido'),
-    57: _(u'Erro inesperado gerando Token'),
-    61: _(u'Transação Recorrente Inválida'),
-    77: _(u'XID não fornecido'),
-    78: _(u'CAVV não fornecido'),
-    86: _(u'XID e CAVV não fornecidos'),
-    87: _(u'CAVV com tamanho divergente'),
-    88: _(u'XID com tamanho divergente'),
-    89: _(u'ECI com tamanho divergente'),
-    90: _(u'ECI inválido'),
-    95: _(u'Erro interno de autenticação'),
-    97: _(u'Sistema indisponível'),
-    98: _(u'Timeout'),
-    99: _(u'Erro inesperado'),
+    1: _('Mensagem inválida'),
+    2: _('Credenciais inválidas'),
+    3: _('Transação inexistente'),
+    8: _('Código de Segurança Inválido'),
+    10: _('Inconsistência no envio do cartão'),
+    11: _('Modalidade não habilitada'),
+    12: _('Número de parcelas inválido'),
+    13: _('Flag de autorização automática'),
+    14: _('Autorização Direta inválida'),
+    15: _('Autorização Direta sem Cartão'),
+    16: _('Identificador, TID, inválido'),
+    17: _('Código de segurança ausente'),
+    18: _('Indicador de código de segurança inconsistente'),
+    19: _('URL de Retorno não fornecida'),
+    20: _('Status não permite autorização'),
+    21: _('Prazo de autorização vencido'),
+    22: _('Número de parcelas inválido'),
+    25: _('Encaminhamento a autorização não permitido'),
+    30: _('Status inválido para captura'),
+    31: _('Prazo de captura vencido'),
+    32: _('Valor de captura inválido'),
+    33: _('Falha ao capturar'),
+    34: _('Valor da taxa de embarque obrigatório'),
+    35: _('Bandeira inválida para utilização da Taxa de Embarque'),
+    36: _('Produto inválido para utilização da Taxa de Embarque'),
+    40: _('Prazo de cancelamento vencido'),
+    42: _('Falha ao cancelar'),
+    43: _('Valor de cancelamento é maior que valor autorizado.'),
+    51: _('Recorrência Inválida'),
+    52: _('Token Inválido'),
+    53: _('Recorrência não habilitada'),
+    54: _('Transação com Token inválida'),
+    55: _('Número do cartão não fornecido'),
+    56: _('Validade do cartão não fornecido'),
+    57: _('Erro inesperado gerando Token'),
+    61: _('Transação Recorrente Inválida'),
+    77: _('XID não fornecido'),
+    78: _('CAVV não fornecido'),
+    86: _('XID e CAVV não fornecidos'),
+    87: _('CAVV com tamanho divergente'),
+    88: _('XID com tamanho divergente'),
+    89: _('ECI com tamanho divergente'),
+    90: _('ECI inválido'),
+    95: _('Erro interno de autenticação'),
+    97: _('Sistema indisponível'),
+    98: _('Timeout'),
+    99: _('Erro inesperado'),
 }
 
 
 CieloAuthorizationCode = {
-    '0': {'msg': _(u'Transação autorizada'), 'retry': False},
-    '1': {'msg': _(u'Transação referida pelo banco emissor'), 'retry': False},
-    '4': {'msg': _(u'Transação False autorizada'), 'retry': True},
-    '5': {'msg': _(u'Transação False autorizada'), 'retry': True},
-    '6': {'msg': _(u'Tente novamente'), 'retry': True},
-    '7': {'msg': _(u'Cartão com restrição'), 'retry': False},
-    '8': {'msg': _(u'Código de segurança inválido'), 'retry': False},
-    '11': {'msg': _(u'Transação autorizada'), 'retry': False},
-    '13': {'msg': _(u'Valor inválido'), 'retry': False},
-    '14': {'msg': _(u'Cartão inválido'), 'retry': False},
-    '15': {'msg': _(u'Banco emissor indisponível'), 'retry': True},
-    '21': {'msg': _(u'Cancelamento False efetuado'), 'retry': False},
-    '41': {'msg': _(u'Cartão com restrição'), 'retry': False},
-    '51': {'msg': _(u'Saldo insuficiente'), 'retry': True},
-    '54': {'msg': _(u'Cartão vencido'), 'retry': False},
-    '57': {'msg': _(u'Transação False permitida'), 'retry': True},
-    '60': {'msg': _(u'Transação False autorizada'), 'retry': False},
-    '62': {'msg': _(u'Transação False autorizada'), 'retry': False},
-    '78': {'msg': _(u'Cartão False foi desbloqueado pelo portador'), 'retry': True},
-    '82': {'msg': _(u'Erro no cartão'), 'retry': True},
-    '91': {'msg': _(u'Banco fora do ar'), 'retry': True},
-    '96': {'msg': _(u'Tente novamente'), 'retry': True},
-    'AA': {'msg': _(u'Tempo excedido'), 'retry': True},
-    'AC': {'msg': _(u'Use função débito'), 'retry': False},
-    'GA': {'msg': _(u'Transação referida pela Cielo'), 'retry': True},
+    '0': {'msg': _('Transação autorizada'), 'retry': False},
+    '1': {'msg': _('Transação referida pelo banco emissor'), 'retry': False},
+    '4': {'msg': _('Transação False autorizada'), 'retry': True},
+    '5': {'msg': _('Transação False autorizada'), 'retry': True},
+    '6': {'msg': _('Tente novamente'), 'retry': True},
+    '7': {'msg': _('Cartão com restrição'), 'retry': False},
+    '8': {'msg': _('Código de segurança inválido'), 'retry': False},
+    '11': {'msg': _('Transação autorizada'), 'retry': False},
+    '13': {'msg': _('Valor inválido'), 'retry': False},
+    '14': {'msg': _('Cartão inválido'), 'retry': False},
+    '15': {'msg': _('Banco emissor indisponível'), 'retry': True},
+    '21': {'msg': _('Cancelamento False efetuado'), 'retry': False},
+    '41': {'msg': _('Cartão com restrição'), 'retry': False},
+    '51': {'msg': _('Saldo insuficiente'), 'retry': True},
+    '54': {'msg': _('Cartão vencido'), 'retry': False},
+    '57': {'msg': _('Transação False permitida'), 'retry': True},
+    '60': {'msg': _('Transação False autorizada'), 'retry': False},
+    '62': {'msg': _('Transação False autorizada'), 'retry': False},
+    '78': {'msg': _('Cartão False foi desbloqueado pelo portador'), 'retry': True},
+    '82': {'msg': _('Erro no cartão'), 'retry': True},
+    '91': {'msg': _('Banco fora do ar'), 'retry': True},
+    '96': {'msg': _('Tente novamente'), 'retry': True},
+    'AA': {'msg': _('Tempo excedido'), 'retry': True},
+    'AC': {'msg': _('Use função débito'), 'retry': False},
+    'GA': {'msg': _('Transação referida pela Cielo'), 'retry': True},
 }
 
 
@@ -206,9 +207,9 @@ INTEREST_TYPE_CHOICES = (
 
 
 CIELO_AUTHORIZATION_TYPE_CHOICES = (
-    (CieloAuthorizationType.OnlyAuthenticate, _(u'Only authenticate')),
-    (CieloAuthorizationType.OnyIfAuthenticated, _(u'Only if the transaction gets authenticated')),
-    (CieloAuthorizationType.IfAuthenticatedOrNot, _(u'If the transaction gets authenticated or not')),
-    (CieloAuthorizationType.Direct, _(u'Direct, do not authenticate')),
-    (CieloAuthorizationType.Recurrent, _(u'Recurrent')),
+    (CieloAuthorizationType.OnlyAuthenticate, _('Only authenticate')),
+    (CieloAuthorizationType.OnyIfAuthenticated, _('Only if the transaction gets authenticated')),
+    (CieloAuthorizationType.IfAuthenticatedOrNot, _('If the transaction gets authenticated or not')),
+    (CieloAuthorizationType.Direct, _('Direct, do not authenticate')),
+    (CieloAuthorizationType.Recurrent, _('Recurrent')),
 )

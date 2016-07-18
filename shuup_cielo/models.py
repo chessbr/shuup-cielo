@@ -133,7 +133,7 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
         if not order.payment_data:
             order.set_canceled()
             order.add_log_entry(_('Payment data is None when it was needed to proccess a Cielo transaction'), kind=LogEntryKind.ERROR)
-            raise Problem(_('No payment identified.'), title=_(u'Order cancelled'))
+            raise Problem(_('No payment identified.'), title=_('Order cancelled'))
 
         # obtém os dados do cartão de acordo com o serviço
         if service.choice_identifier == CIELO_SERVICE_DEBIT:
@@ -155,9 +155,9 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
 
             if total_difference > 0.01:
                 order.set_canceled()
-                order.add_log_entry(_(u'Installment interest total is different from the order payment method total.'), kind=LogEntryKind.ERROR)
+                order.add_log_entry(_('Installment interest total is different from the order payment method total.'), kind=LogEntryKind.ERROR)
                 raise Problem(_('Installment interest total is different from the order payment method total!'),
-                                title=_(u'Order cancelled'))
+                                title=_('Order cancelled'))
 
         # pré-calcula
         order_total = order.taxful_total_price.value
@@ -170,7 +170,7 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
                         codigo_seguranca=safe_int(cc_info['cc_security_code']),
                         nome_portador=cc_info['cc_holder'])
 
-        pedido = Pedido(numero=str(order.pk),
+        pedido = Pedido(numero="{0}".format(order.pk),
                         valor=decimal_to_int_cents(order_total),
                         moeda=986,  # Fixo
                         data_hora=order.order_date.isoformat())
@@ -236,8 +236,8 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
             return HttpResponseRedirect(urls.return_url)
 
         except CieloRequestError as err:
-            error_str = six.u(str(err))
-            order.add_log_entry(_(u"Cielo transaction failed: {0}").format(error_str), kind=LogEntryKind.ERROR)
+            error_str = "{0}".format(err)
+            order.add_log_entry(_("Cielo transaction failed: {0}").format(error_str), kind=LogEntryKind.ERROR)
             err_code = safe_int(error_str.split("-")[0].strip())
 
             if err_code == 17:  # Código de segurança inválido
@@ -249,7 +249,7 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
             # não cancelar o pedido e sim informar o usuário par atentar novamente
             # ou redirectionar para uma página especial da Cielo para retentar
             order.set_canceled()
-            raise Problem(error, title=_(u'Payment failed'))
+            raise Problem(error, title=_('Payment failed'))
 
         return HttpResponseRedirect(urls.cancel_url)
 
@@ -268,7 +268,7 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
             cielows15_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
         except CieloWS15Transaction.DoesNotExist:
             order.set_canceled()
-            raise Problem(_(u'Payment not identified.'), title=_(u'Order cancelled'))
+            raise Problem(_('Payment not identified.'), title=_('Order cancelled'))
 
         cielows15_transaction.refresh()
 
@@ -323,7 +323,7 @@ class CieloWS15Transaction(models.Model):
     authentication_date = models.DateTimeField(_('Authentication date'), null=True, blank=True)
 
     class Meta:
-        verbose_name = _(u'Cielo 1.5 transaction')
+        verbose_name = _('Cielo 1.5 transaction')
         verbose_name_plural = _('Cielo 1.5 transactions')
 
     def _get_comercial(self):
@@ -368,7 +368,7 @@ class CieloWS15Transaction(models.Model):
             return True
 
         except:
-            logger.exception(_(u'Fail to update Cielo transation info'))
+            logger.exception(_('Fail to update Cielo transation info'))
 
         return False
 
@@ -480,6 +480,6 @@ class CieloInstallmentInterestBehaviorComponent(ServiceBehaviorComponent):
 
             if installment_info['interest_total'] > 0.01:
                 interest_total = source.create_price(installment_info['interest_total'])
-                description = _(u'installment interest for {0}x').format(installment_info['installment'])
+                description = _('installment interest for {0}x').format(installment_info['installment'])
 
         yield ServiceCost(interest_total, description)

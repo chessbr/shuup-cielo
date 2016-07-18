@@ -6,6 +6,8 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+from __future__ import unicode_literals
+
 from decimal import Decimal
 import uuid
 
@@ -1235,9 +1237,9 @@ def test_credit_card_non_authorized_error():
     with patch.object(CieloRequest, 'autorizar') as mocked:
         mocked.side_effect = CieloRequestError('8 - {0}'.format(CieloErrorMap[8]))
         response = c.get(process_payment_path)
-        assert str(response.content).index("Unknown error") >= 0
+        assert "{0}".format(response.content.decode("utf-8")).index("Unknown error") >= 0
 
     with patch.object(CieloRequest, 'autorizar') as mocked:
         mocked.side_effect = CieloRequestError('17 - {0}'.format(CieloErrorMap[17]))
         response = c.get(process_payment_path)
-        assert str(response.content).index("Invalid security code") >= 0
+        assert "{0}".format(response.content.decode("utf-8")).index("Invalid security code") >= 0
