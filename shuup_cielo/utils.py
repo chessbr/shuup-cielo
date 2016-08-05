@@ -12,6 +12,8 @@ from __future__ import division, unicode_literals
 from decimal import Decimal
 import math
 
+from six.moves.urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
 
 def is_cc_valid(cc_number):
     '''
@@ -86,3 +88,20 @@ class InstallmentCalculator(object):
         total = amount + Decimal(amount * installments * interest_rate)
 
         return (total, total / installments)
+
+
+def url_querystring_join(base_url, new_params={}):
+    '''
+    Add more params into an existing URL with querystring
+
+    e.g: base_url = http://www.google.com?search=test
+         new_params = {'id':31221}
+
+         result = http://www.google.com?search=test&id=31221
+    '''
+
+    url_parts = list(urlparse(base_url))
+    query = dict(parse_qsl(url_parts[4]))
+    query.update(new_params)
+    url_parts[4] = urlencode(query)
+    return urlunparse(url_parts)

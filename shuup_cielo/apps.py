@@ -21,6 +21,9 @@ class ShuupCieloAppConfig(AppConfig):
         "front_service_checkout_phase_provider": [
             "shuup_cielo.checkout:CieloCheckoutPhaseProvider"
         ],
+        "front_urls_pre": [
+            "shuup_cielo.urls:urlpatterns"
+        ],
         "admin_order_section": [
              "shuup_cielo.admin.order_section:CieloOrderSection"
         ],

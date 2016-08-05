@@ -8,6 +8,7 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
+import base64
 from decimal import Decimal
 import uuid
 
@@ -16,25 +17,14 @@ from mock import patch
 import pytest
 
 from shuup_cielo.constants import (
-    CIELO_CREDIT_CARD_INFO_KEY, CIELO_DEBIT_CARD_INFO_KEY, CIELO_SERVICE_CREDIT,
-    CIELO_SERVICE_DEBIT, CIELO_TID_INFO_KEY, CieloAuthorizationType, CieloCardBrand, CieloErrorMap,
-    CieloProduct, CieloTransactionStatus, InterestType
-, CIELO_INSTALLMENT_INFO_KEY)
+    CIELO_CREDIT_CARD_INFO_KEY, CIELO_DEBIT_CARD_INFO_KEY, CIELO_INSTALLMENT_INFO_KEY,
+    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CIELO_TID_INFO_KEY, CieloAuthorizationType,
+    CieloCardBrand, CieloErrorMap, CieloProduct, CieloTransactionStatus, InterestType
+)
 from shuup_cielo.models import CieloWS15PaymentProcessor, CieloWS15Transaction
 from shuup_cielo.utils import decimal_to_int_cents
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
-
-from django.core import signing
-from django.core.urlresolvers import reverse
-from django.utils.timezone import now
-
-from cielo_webservice.exceptions import CieloRequestError
-from cielo_webservice.models import (
-    dict_to_autenticacao, dict_to_autorizacao, dict_to_captura, dict_to_pagamento, dict_to_pedido,
-    Transacao
-)
-from cielo_webservice.request import CieloRequest
 
 from shuup.core.defaults.order_statuses import create_default_order_statuses
 from shuup.core.models._order_lines import OrderLineType
@@ -47,6 +37,18 @@ from shuup.testing.factories import (
 from shuup.testing.mock_population import populate_if_required
 from shuup.testing.soup_utils import extract_form_fields
 from shuup.xtheme._theme import set_current_theme
+
+from cielo_webservice.exceptions import CieloRequestError
+from cielo_webservice.models import (
+    dict_to_autenticacao, dict_to_autorizacao, dict_to_captura, dict_to_pagamento, dict_to_pedido,
+    Transacao
+)
+from cielo_webservice.request import CieloRequest
+
+from django.core import signing
+from django.core.urlresolvers import reverse
+from django.utils.encoding import escape_uri_path
+from django.utils.timezone import now
 
 PRODUCT_PRICE = Decimal(15.0)
 
@@ -174,9 +176,13 @@ def test_order_flow_with_payment_phase_credit_card_success():
     assert order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY)
     assert order.payment_status == PaymentStatus.NOT_PAID
 
+    AUTH_URL = 'http://CUSTUM_URL'
+
     process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
     process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
     order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
+    checkout_auth_redirect_path = "{0}?auth_url={1}".format(reverse("shuup:checkout_auth_redirect"),
+                                                            escape_uri_path(base64.b64encode(AUTH_URL.encode()).decode()))
 
     # Check confirm redirection to payment page
     assert response.url.endswith(process_payment_path), ("Confirm should have redirected to payment page")
@@ -197,14 +203,14 @@ def test_order_flow_with_payment_phase_credit_card_success():
         tid=tid,
         pan=None,
         status=CieloTransactionStatus.InProgress.value,
-        url_autenticacao='http://CUSTUM_URL',
+        url_autenticacao=AUTH_URL,
     )
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         # Visit payment page
         response = c.get(process_payment_path)
         assert response.status_code == 302, "Payment page should redirect forth"
-        assert response.url.endswith(transacao.url_autenticacao)
+        assert response.url.endswith(checkout_auth_redirect_path)
 
         order.refresh_from_db()
         assert order.payment_data.get(CIELO_TID_INFO_KEY) == tid
@@ -752,9 +758,13 @@ def test_debit_auto_capture_with_auth():
     assert order.payment_data.get(CIELO_DEBIT_CARD_INFO_KEY)
     assert order.payment_status == PaymentStatus.NOT_PAID
 
+    AUTH_URL = 'http://CUSTUM_URL'
+
     process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
     process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
     order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
+    checkout_auth_redirect_path = "{0}?auth_url={1}".format(reverse("shuup:checkout_auth_redirect"),
+                                                            escape_uri_path(base64.b64encode(AUTH_URL.encode()).decode()))
 
     # Check confirm redirection to payment page
     assert response.url.endswith(process_payment_path), ("Confirm should have redirected to payment page")
@@ -775,14 +785,14 @@ def test_debit_auto_capture_with_auth():
         tid=tid,
         pan=None,
         status=CieloTransactionStatus.InProgress.value,
-        url_autenticacao='http://CUSTUM_URL',
+        url_autenticacao=AUTH_URL,
     )
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         # Visit payment page
         response = c.get(process_payment_path)
         assert response.status_code == 302, "Payment page should redirect forth"
-        assert response.url.endswith(transacao.url_autenticacao)
+        assert response.url.endswith(checkout_auth_redirect_path)
 
         order.refresh_from_db()
         assert order.payment_data.get(CIELO_TID_INFO_KEY) == tid

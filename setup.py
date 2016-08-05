@@ -15,16 +15,17 @@ import setuptools
     Babel integration: http://babel.pocoo.org/en/stable/setup.html
 
     - Extract messages:
-        `python setup.py extract_messages -D django --output-file shuup_cielo/locale/django.pot`
+        `python setup.py extract_messages --output-file shuup_cielo/locale/django.pot 
+            --project "Shuup Cielo" --copyright-holder "Rockho Team <rockho@rockho.com.br>"`
 
     - Update an existing catalog (language):
-        `python setup.py -D django update_catalog -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale`
+        `python setup.py update_catalog -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale -D django`
 
     - Compile catalog:
-        `python setup.py compile_catalog -D django -d shuup_cielo/locale -l pt_BR`
+        `python setup.py compile_catalog -d shuup_cielo/locale -l pt_BR -D django`
 
     - Create a new catalog (language):
-        `python setup.py init_catalog -D django -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale`
+        `python setup.py init_catalog -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale -D django`
 """
 
 NAME = 'shuup-cielo'

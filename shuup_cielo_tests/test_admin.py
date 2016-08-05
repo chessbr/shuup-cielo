@@ -22,15 +22,6 @@ from shuup_cielo_tests.test_checkout import get_payment_provider
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
 
-from django.core.urlresolvers import reverse
-from django.utils.timezone import now
-
-from cielo_webservice.models import (
-    dict_to_autenticacao, dict_to_autorizacao, dict_to_cancelamento, dict_to_captura,
-    dict_to_pagamento, dict_to_pedido, Transacao
-)
-from cielo_webservice.request import CieloRequest
-
 from shuup.core.defaults.order_statuses import create_default_order_statuses
 from shuup.core.models._orders import Order
 from shuup.core.models._product_shops import ShopProduct
@@ -43,6 +34,15 @@ from shuup.testing.soup_utils import extract_form_fields
 from shuup.testing.utils import apply_request_middleware
 from shuup.utils.importing import load
 from shuup.xtheme._theme import set_current_theme
+
+from cielo_webservice.models import (
+    dict_to_autenticacao, dict_to_autorizacao, dict_to_cancelamento, dict_to_captura,
+    dict_to_pagamento, dict_to_pedido, Transacao
+)
+from cielo_webservice.request import CieloRequest
+
+from django.core.urlresolvers import reverse
+from django.utils.timezone import now
 
 # TODO:
 # Testar RefreshTransactionView

@@ -11,24 +11,29 @@ import calendar
 from datetime import datetime
 
 from shuup_cielo.constants import (
-    CIELO_CARD_BRAND_CHOICES, CieloProduct, CieloProductMatrix,
-    INSTALLMENT_CHOICE_WITH_INTEREST_STRING, INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING
+    CIELO_CREDITCARD_BRAND_CHOICES, CIELO_DEBITCARD_BRAND_CHOICES, CIELO_SERVICE_CREDIT,
+    CIELO_SERVICE_DEBIT, CieloProduct, CieloProductMatrix, INSTALLMENT_CHOICE_WITH_INTEREST_STRING,
+    INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING
 )
 from shuup_cielo.utils import is_cc_valid, safe_int
+
+from shuup.utils.i18n import format_money
+from shuup.utils.money import Money
 
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.utils.formats import localize
 from django.utils.translation import ugettext_lazy as _
-
-from shuup.utils.i18n import format_money
-from shuup.utils.money import Money
 
 
 class CieloPaymentForm(forms.Form):
-    cc_brand = forms.ChoiceField(label=_('Brand'), required=True,
-                                 choices=CIELO_CARD_BRAND_CHOICES)
+    cc_brand = forms.ChoiceField(label=_('Brand'),
+                                 required=True,
+                                 choices=[],
+                                 widget=forms.RadioSelect())
+
     cc_holder = forms.CharField(label=_('Holder'), required=True, max_length=50)
     cc_number = forms.CharField(label=_('Number'), required=True, max_length=20)
     cc_security_code = forms.CharField(label=_('Security code'), required=True,
@@ -42,13 +47,19 @@ class CieloPaymentForm(forms.Form):
                                      initial=1,
                                      choices=[(1, '1x')])  # Only 1 installment is enabled by default
 
-    def __init__(self, installment_context=None, currency=settings.SHUUP_HOME_CURRENCY, *args, **kwargs):
+    def __init__(self, installment_context=None,
+                 currency=settings.SHUUP_HOME_CURRENCY,
+                 service=CIELO_SERVICE_CREDIT,
+                 *args, **kwargs):
+
         self.installment_context = installment_context
         self.currency = currency
+        self.service = service
+
         super(CieloPaymentForm, self).__init__(*args, **kwargs)
 
         # com o contexto de parcelamento, cria e popula o choicefield
-        if installment_context:
+        if service == CIELO_SERVICE_CREDIT and installment_context:
             installment_choices = []
 
             choices = installment_context.get_intallments_choices()
@@ -59,12 +70,12 @@ class CieloPaymentForm(forms.Form):
                     label = INSTALLMENT_CHOICE_WITH_INTEREST_STRING.format(installment,
                                                                            format_money(Money(installment_amount, currency)),
                                                                            format_money(Money(installments_total, currency)),
-                                                                           installment_context.interest_rate)
+                                                                           localize(installment_context.interest_rate))
                 else:
                     label = INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING.format(installment,
                                                                               format_money(Money(installment_amount, currency)),
                                                                               format_money(Money(installments_total, currency)),
-                                                                              installment_context.interest_rate)
+                                                                              localize(installment_context.interest_rate))
 
                 installment_choices.append(
                     (installment, label)
@@ -80,6 +91,12 @@ class CieloPaymentForm(forms.Form):
             # sem parcelamento, não precisa apresentar o widget
             self.fields['installments'].widget = forms.HiddenInput()
 
+        # configura as opcoes de acordo com o serviço
+        if service == CIELO_SERVICE_DEBIT:
+            self.fields['cc_brand'].choices = CIELO_DEBITCARD_BRAND_CHOICES
+        else:
+            self.fields['cc_brand'].choices = CIELO_CREDITCARD_BRAND_CHOICES
+
     def clean_cc_number(self):
         cc_number = self.cleaned_data.get('cc_number')
 
@@ -92,8 +109,11 @@ class CieloPaymentForm(forms.Form):
         cleaned = super(CieloPaymentForm, self).clean()
 
         # Bandeira não aceita parcelado, força apenas 1 parcela
-        if not CieloProductMatrix.get(cleaned.get('cc_brand'), {}).get(CieloProduct.InstallmentCredit):
+        if safe_int(cleaned.get('installments', 1)) > 1 and not \
+                CieloProductMatrix.get(cleaned.get('cc_brand'), {}).get(CieloProduct.InstallmentCredit):
+
             cleaned['installments'] = 1
+            self.add_error('installments', _('This brand does not accept installments'))
 
         try:
             cc_valid_year = safe_int(cleaned.get('cc_valid_year'))

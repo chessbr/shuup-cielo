@@ -18,11 +18,11 @@ from shuup_cielo.constants import (
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloWS15PaymentProcessor, InstallmentContext
 
+from shuup.front.checkout import BasicServiceCheckoutPhaseProvider, CheckoutPhaseViewMixin
+
 from django.core import signing
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic.edit import FormView
-
-from shuup.front.checkout import BasicServiceCheckoutPhaseProvider, CheckoutPhaseViewMixin
 
 logger = logging.getLogger(__name__)
 
@@ -41,24 +41,24 @@ class CieloCheckoutPhase(CheckoutPhaseViewMixin, FormView):
 
             initial.update({
                 'installments': cc_info['installments'],
-                'cc_brand': cc_info['cc_brand'],
-                'cc_holder': '*' * len(str(cc_info['cc_holder'])),
-                'cc_number': '*' * len(str(cc_info['cc_number'])),
-                'cc_security_code': '*' * len(str(cc_info['cc_security_code'])),
-                'cc_valid_year': '*' * len(str(cc_info['cc_valid_year'])),
-                'cc_valid_month': '*' * len(str(cc_info['cc_valid_month'])),
+                'cc_brand': '',
+                'cc_holder': '',
+                'cc_number': '',
+                'cc_security_code': '',
+                'cc_valid_year': '',
+                'cc_valid_month': '',
             })
 
         elif self.storage.get(CIELO_DEBIT_CARD_INFO_KEY):
-            cc_info = signing.loads(self.storage[CIELO_CREDIT_CARD_INFO_KEY])
+            cc_info = signing.loads(self.storage[CIELO_DEBIT_CARD_INFO_KEY])
 
             initial.update({
-                'cc_brand': cc_info['cc_brand'],
-                'cc_holder': '*' * len(str(cc_info['cc_holder'])),
-                'cc_number': '*' * len(str(cc_info['cc_number'])),
-                'cc_security_code': '*' * len(str(cc_info['cc_security_code'])),
-                'cc_valid_year': '*' * len(str(cc_info['cc_valid_year'])),
-                'cc_valid_month': '*' * len(str(cc_info['cc_valid_month'])),
+                'cc_brand': '',
+                'cc_holder': '',
+                'cc_number': '',
+                'cc_security_code': '',
+                'cc_valid_year': '',
+                'cc_valid_month': '',
             })
 
         return initial
@@ -73,16 +73,22 @@ class CieloCheckoutPhase(CheckoutPhaseViewMixin, FormView):
             # Calcula o total do custo do método de pagamento para ser descontado do total do parcelamento
             # O total desta forma de pagamento será o valor adicional do juros do parcelamento,
             # sendo assim este valor deve ser desconsiderado na hora de calular as parcelas
-            payment_method_price = sum([line.price.value for line in self.request.basket._compute_payment_method_lines()])
+            payment_method_price = sum(
+                [line.price.value for line in self.request.basket._compute_payment_method_lines()]
+            )
 
             # para fazer o calculo das parcelas, precisamos montar o contexto
             # contendo o valor total do carrinho e também as constraints
             # vamos ter pacelas se for o serviço de cartão de crédito e for o processador da Cielo
             if payment_method.choice_identifier == CIELO_SERVICE_CREDIT:
-                context = InstallmentContext((self.request.basket.taxful_total_price.value - payment_method_price),
-                                             payment_method.payment_processor)
+                context = InstallmentContext(
+                    (self.request.basket.taxful_total_price.value - payment_method_price),
+                    payment_method.payment_processor
+                )
 
                 kwargs['installment_context'] = context
+
+            kwargs['service'] = payment_method.choice_identifier
 
         kwargs['currency'] = self.request.basket.currency
         return kwargs
