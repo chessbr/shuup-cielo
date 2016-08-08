@@ -8,12 +8,12 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
+import base64
 from decimal import Decimal
 import logging
 
 from enumfields import EnumIntegerField
 import iso8601
-import six
 
 from shuup_cielo.constants import (
     CIELO_AUTHORIZATION_TYPE_CHOICES, CIELO_CREDIT_CARD_INFO_KEY, CIELO_DEBIT_CARD_INFO_KEY,
@@ -21,17 +21,9 @@ from shuup_cielo.constants import (
     CIELO_TID_INFO_KEY, CieloAuthorizationType, CieloProduct, CieloTransactionStatus,
     INTEREST_TYPE_CHOICES, InterestType
 )
-from shuup_cielo.utils import decimal_to_int_cents, InstallmentCalculator, safe_int
-
-from django.core import signing
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-from django.http.response import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
-
-from cielo_webservice.exceptions import CieloRequestError
-from cielo_webservice.models import Cartao, Comercial, Pagamento, Pedido, Transacao
-from cielo_webservice.request import CieloRequest
+from shuup_cielo.utils import (
+    decimal_to_int_cents, InstallmentCalculator, safe_int, url_querystring_join
+)
 
 from shuup.core.fields import MoneyValueField
 from shuup.core.models import PaymentProcessor, ServiceChoice
@@ -40,6 +32,18 @@ from shuup.core.models._service_base import ServiceBehaviorComponent, ServiceCos
 from shuup.utils.analog import LogEntryKind
 from shuup.utils.excs import Problem
 from shuup.utils.properties import MoneyProperty
+
+from cielo_webservice.exceptions import CieloRequestError
+from cielo_webservice.models import Cartao, Comercial, Pagamento, Pedido, Transacao
+from cielo_webservice.request import CieloRequest
+
+from django.core import signing
+from django.core.urlresolvers import reverse
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.http.response import HttpResponseRedirect
+from django.utils.encoding import force_bytes, force_text
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
@@ -155,9 +159,10 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
 
             if total_difference > 0.01:
                 order.set_canceled()
-                order.add_log_entry(_('Installment interest total is different from the order payment method total.'), kind=LogEntryKind.ERROR)
+                order.add_log_entry(_('Installment interest total is different from the order payment method total.'),
+                                    kind=LogEntryKind.ERROR)
                 raise Problem(_('Installment interest total is different from the order payment method total!'),
-                                title=_('Order cancelled'))
+                              title=_('Order cancelled'))
 
         # pré-calcula
         order_total = order.taxful_total_price.value
@@ -230,7 +235,11 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
 
             # se existe uma URL para autenticacao, vamos redirecionar
             if response_transaction.url_autenticacao:
-                return HttpResponseRedirect(response_transaction.url_autenticacao)
+                redirect_url = url_querystring_join(
+                    reverse('shuup:checkout_auth_redirect'),
+                    {"auth_url": base64.b64encode(response_transaction.url_autenticacao.encode()).decode()}
+                )
+                return HttpResponseRedirect(redirect_url)
 
             # Tudo certo, vamos pra frente
             return HttpResponseRedirect(urls.return_url)
@@ -277,10 +286,15 @@ class CieloWS15PaymentProcessor(PaymentProcessor):
         # concluir o pedido quando o pagamento for autorizado
         if cielows15_transaction.status in (CieloTransactionStatus.Captured,
                                             CieloTransactionStatus.Authorized):
-            order.create_payment(
-                order.taxful_total_price,
-                payment_identifier=tid
-            )
+
+            try:
+                order.create_payment(
+                    order.taxful_total_price,
+                    payment_identifier=tid
+                )
+
+            except Exception as exc:
+                order.add_log_entry(_("Cielo create payment error: {0}").format(exc), kind=LogEntryKind.ERROR)
 
         # remove informação sigilosa
         order.payment_data[CIELO_CREDIT_CARD_INFO_KEY] = None

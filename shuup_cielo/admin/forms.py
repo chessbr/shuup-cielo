@@ -11,9 +11,9 @@ from __future__ import unicode_literals
 
 from shuup_cielo.models import CieloWS15PaymentProcessor
 
-from django import forms
-
 from shuup.admin.forms import ShuupAdminForm
+
+from django import forms
 
 
 class CieloWS15PaymentProcessorForm(ShuupAdminForm):

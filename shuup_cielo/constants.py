@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 
 from enumfields import Enum
 
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 CIELO_SERVICE_CREDIT = 'credit'
@@ -181,15 +183,21 @@ CieloProductMatrix = {
 }
 
 
-CIELO_CARD_BRAND_CHOICES = (
-    (CieloCardBrand.Amex, 'American Express'),
-    (CieloCardBrand.Aura, 'Aura'),
-    (CieloCardBrand.Discover, 'Discover'),
-    (CieloCardBrand.Visa, 'Visa'),
-    (CieloCardBrand.Mastercard, 'Mastercard'),
-    (CieloCardBrand.Jcb, 'JCB'),
-    (CieloCardBrand.Diners, 'Diners'),
-    (CieloCardBrand.Elo, 'Elo'),
+CIELO_CREDITCARD_BRAND_CHOICES = (
+    (CieloCardBrand.Visa, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/visa.png')))),
+    (CieloCardBrand.Mastercard, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/mastercard.png')))),
+    (CieloCardBrand.Elo, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/elo.png')))),
+    (CieloCardBrand.Amex, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/amex.png')))),
+    (CieloCardBrand.Diners, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/diners.png')))),
+    (CieloCardBrand.Aura, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/aura.png')))),
+    (CieloCardBrand.Discover, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/discover.png')))),
+    (CieloCardBrand.Jcb, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/jcb.png')))),
+)
+
+
+CIELO_DEBITCARD_BRAND_CHOICES = (
+    (CieloCardBrand.Visa, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/visa_electron.png')))),
+    (CieloCardBrand.Mastercard, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/maestro.png')))),
 )
 
 

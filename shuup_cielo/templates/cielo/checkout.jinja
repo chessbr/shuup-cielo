@@ -4,7 +4,7 @@
 {% block checkout_phase_content %}
 <form role="form" method="post" action="" id="cielo">
      {% csrf_token %}
-    
+
     <div class="well">
         <fieldset>
             <div class="row">
@@ -13,8 +13,23 @@
                 </div>
             </div>
             <div id="cc_info" class="form-horizontal">
-                {{ bs3.field(form.cc_product, layout="horizontal") }}
-                {{ bs3.field(form.cc_brand, layout="horizontal") }}
+
+                <div class="col-md-12 form-group required-field">
+                    <div class="col-md-3 control-label vertical-center">{% trans %}Brand{% endtrans %}</div>
+                    <div class="col-md-9 btn-group" data-toggle="buttons">
+                        {% for option in form.cc_brand %}
+                        <label class="btn{% if option.is_checked() %} active{% endif %}" for="{{ option.id_for_label }}">
+                            {{ option.choice_label }}
+                            {{ option.tag() }}
+                        </label>
+                        {% endfor %}
+                        {% for error in form.cc_brand.errors %}
+                        <br />
+                        <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 {{ bs3.field(form.cc_holder, layout="horizontal") }}
                 {{ bs3.field(form.cc_number, layout="horizontal") }}
                 {{ bs3.field(form.cc_security_code, layout="horizontal") }}

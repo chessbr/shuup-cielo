@@ -6,17 +6,19 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+from __future__ import unicode_literals
+
 from decimal import Decimal
 
 import shuup_cielo
 from shuup_cielo.constants import CieloTransactionStatus
 from shuup_cielo.models import CieloWS15Transaction
 
+from cielo_webservice.exceptions import CieloRequestError
+
 from django.http.response import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render_to_response
 from django.views.generic.base import TemplateView, View
-
-from cielo_webservice.exceptions import CieloRequestError
 
 TRANSACTION_DETAIL_TEMPLAE = 'cielo/admin/order_section_transaction_detail.jinja'
 
@@ -67,14 +69,14 @@ class CaptureTransactionView(View):
             try:
                 cielo_transaction.capture(amount)
             except CieloRequestError as err:
-                return HttpResponseBadRequest(str(err))
+                return HttpResponseBadRequest("{0}".format(err))
 
             cielo_transaction.refresh()
             return render_to_response(TRANSACTION_DETAIL_TEMPLAE, {'transaction': cielo_transaction,
                                                                    'CieloTransactionStatus': CieloTransactionStatus})
 
         except Exception as exc:
-            return HttpResponseServerError(str(exc))
+            return HttpResponseServerError("{0}".format(exc))
 
 
 class CancelTransactionView(View):
@@ -97,11 +99,11 @@ class CancelTransactionView(View):
             try:
                 cielo_transaction.cancel(amount)
             except CieloRequestError as err:
-                return HttpResponseBadRequest(str(err))
+                return HttpResponseBadRequest("{0}".format(err))
 
             cielo_transaction.refresh()
             return render_to_response(TRANSACTION_DETAIL_TEMPLAE, {'transaction': cielo_transaction,
                                                                    'CieloTransactionStatus': CieloTransactionStatus})
 
         except Exception as exc:
-            return HttpResponseServerError(str(exc))
+            return HttpResponseServerError("{0}".format(exc))

@@ -14,13 +14,13 @@ from shuup_cielo.constants import CieloAuthorizationType, CieloCardBrand, Intere
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloWS15PaymentProcessor, InstallmentContext
 
-from django import forms
-from django.conf import settings
-from django.utils.timezone import now
-
 from shuup.testing.factories import (
     _get_service_provider, DEFAULT_IDENTIFIER, get_default_shop, get_default_tax_class
 )
+
+from django import forms
+from django.conf import settings
+from django.utils.timezone import now
 
 
 def get_payment_method():
@@ -131,15 +131,25 @@ def test_form_validate():
 
 
     # bandeira nao aceita parcelado
-    form = CieloPaymentForm(context, data={'cc_number':'4012001038443335',
+    form = CieloPaymentForm(context, data={'cc_number':'6011020000245045',
                                            'cc_brand':CieloCardBrand.Discover,
                                            'cc_holder':'portador',
                                            'cc_security_code':'122',
                                            'cc_valid_year': now().year + 1,
                                            'cc_valid_month': "%2d" % int(now().month),
                                            'installments': 2})
+    assert form.is_valid() == False
+    assert len(form.non_field_errors()) == 0
+
+    # discover ok
+    form = CieloPaymentForm(context, data={'cc_number':'6011020000245045',
+                                           'cc_brand':CieloCardBrand.Discover,
+                                           'cc_holder':'portador',
+                                           'cc_security_code':'122',
+                                           'cc_valid_year': now().year + 1,
+                                           'cc_valid_month': "%2d" % int(now().month),
+                                           'installments': 1})
     assert form.is_valid() == True
-    assert int(form.cleaned_data['installments']) == 1
     assert len(form.non_field_errors()) == 0
 
 
