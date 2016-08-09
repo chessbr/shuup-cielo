@@ -42,7 +42,6 @@ from django.core.urlresolvers import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.http.response import HttpResponseRedirect
-from django.utils.encoding import force_bytes, force_text
 from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger(__name__)
@@ -497,3 +496,17 @@ class CieloInstallmentInterestBehaviorComponent(ServiceBehaviorComponent):
                 description = _('installment interest for {0}x').format(installment_info['installment'])
 
         yield ServiceCost(interest_total, description)
+
+
+class DiscountPercentageBehaviorComponent(ServiceBehaviorComponent):
+    percentage = models.DecimalField(verbose_name=_('Discount percentage'),
+                                     decimal_places=2,
+                                     max_digits=5)
+    name = _('Discount percentage')
+    help_text = _("Applies a discount percentage over the basket's products")
+
+    def get_costs(self, service, source):
+        products_total = sum([product.price.value for product in source.get_product_lines()])
+        description = _('products discount {0:.2f}%').format(-self.percentage)
+        discount_amoumt = source.create_price(products_total * ((-self.percentage) / Decimal(100.0)))
+        yield ServiceCost(discount_amoumt, description)
