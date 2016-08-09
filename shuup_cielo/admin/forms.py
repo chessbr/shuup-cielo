@@ -9,7 +9,8 @@
 
 from __future__ import unicode_literals
 
-from shuup_cielo.models import CieloWS15PaymentProcessor
+from shuup_cielo.models import CieloWS15PaymentProcessor,\
+    DiscountPercentageBehaviorComponent
 
 from shuup.admin.forms import ShuupAdminForm
 
@@ -23,3 +24,9 @@ class CieloWS15PaymentProcessorForm(ShuupAdminForm):
         widgets = {
             'ec_key': forms.PasswordInput(render_value=True),
         }
+
+
+class DiscountPercentageBehaviorComponentForm(forms.ModelForm):
+    class Meta:
+        model = DiscountPercentageBehaviorComponent
+        exclude = ["identifier"]

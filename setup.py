@@ -12,7 +12,7 @@ import setuptools
 """
 TIP:
     To extract messages:
-        python -m shuup_workbench shuup_makemessages --no-pot-date --no-wrap -l pt_BR --include-location
+        python -m shuup_workbench shuup_makemessages --no-pot-date --no-wrap --include-location -l pt_BR
 
     To compile messages:
         python -m shuup_workbench compilemessages

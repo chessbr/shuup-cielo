@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Shuup Cielo 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-09 00:19+0000\n"
+"POT-Creation-Date: 2016-08-09 18:50+0000\n"
 "PO-Revision-Date: 2016-08-07 23:11-0300\n"
 "Last-Translator: Christian Hess <chess@rockho.com.br>\n"
 "Language-Team: pt_BR <LL@li.org>\n"
@@ -429,219 +429,232 @@ msgstr "Seu cartão está vencido"
 msgid "Invalid expiration date"
 msgstr "Data de validade inválida"
 
-#: models.py:58
+#: models.py:57
 msgid "Cielo's affiliation number"
 msgstr "Número do credenciamento"
 
-#: models.py:59
+#: models.py:58
 msgid "Cielo's affiliation secret key"
 msgstr "Chave secreta"
 
-#: models.py:61
+#: models.py:60
 msgid "Auto capture transactions"
 msgstr "Capturar transações automaticamente"
 
-#: models.py:63
+#: models.py:62
 msgid "Enable this to capture transactions right after they get approved."
 msgstr "Ative para que as transações sejam capturadas logo após serem aprovadas"
 
-#: models.py:66
+#: models.py:65
 msgid "Authorization mode"
 msgstr "Modo de autorização"
 
-#: models.py:69
+#: models.py:68
 msgid "Select the authroization type for credit cards."
 msgstr "Selecione o modo de autorização para cartões de crédito"
 
-#: models.py:71
+#: models.py:70
 msgid "Maximum installments number"
 msgstr "Quantidade máxima de parcelas"
 
-#: models.py:78
+#: models.py:77
 msgid "Installments without interest"
 msgstr "Parcelas sem taxa de juros"
 
-#: models.py:84
+#: models.py:83
 msgid "How many installments will have no interest applied."
 msgstr "Informe quantas parcelas não terão juros aplicado"
 
-#: models.py:87
+#: models.py:86
 msgid "Interest type"
 msgstr "Tipo de juros"
 
-#: models.py:92
+#: models.py:91
 msgid "Interest rate"
 msgstr "Taxa de juros mensal"
 
-#: models.py:98
+#: models.py:97
 msgid "Minimum installment amount"
 msgstr "Valor mínimo da parcela"
 
-#: models.py:104
+#: models.py:103
 msgid "Sandbox mode"
 msgstr "Modo Sandbox"
 
-#: models.py:106
+#: models.py:105
 msgid "Enable this to activate Developer mode (test mode)."
 msgstr "Ative para habilitar o modo Desenvolvedor (testes)"
 
-#: models.py:109 models.py:110
+#: models.py:108 models.py:109
 msgid "Cielo Webservice v1.5"
 msgstr ""
 
-#: models.py:114
+#: models.py:113
 msgid "Credit card"
 msgstr "Cartão de crédito"
 
-#: models.py:115
+#: models.py:114
 msgid "Debit card"
 msgstr "Cartão de débito"
 
-#: models.py:139
+#: models.py:138
 msgid "Payment data is None when it was needed to proccess a Cielo transaction"
 msgstr ""
 
-#: models.py:140
+#: models.py:139
 msgid "No payment identified."
 msgstr "Nenhum pagamento identificado"
 
-#: models.py:140 models.py:165 models.py:280
+#: models.py:139 models.py:164 models.py:279
 msgid "Order cancelled"
 msgstr "Pedido cancelado"
 
-#: models.py:162
+#: models.py:161
 msgid "Installment interest total is different from the order payment method total."
 msgstr "Total do parcelamento é diferente do total do pedido."
 
-#: models.py:164
+#: models.py:163
 msgid "Installment interest total is different from the order payment method total!"
 msgstr "Total do parcelamento é diferente do total do pedido!"
 
-#: models.py:249
+#: models.py:248
 #, python-brace-format
 msgid "Cielo transaction failed: {0}"
 msgstr "Transação falhou: {0}"
 
-#: models.py:253
+#: models.py:252
 msgid "Invalid security code."
 msgstr "Código de segurança inválido."
 
-#: models.py:255
+#: models.py:254
 msgid "Unknown error."
 msgstr "Erro desconhecido."
 
-#: models.py:261
+#: models.py:260
 msgid "Payment failed"
 msgstr "Falha no pagamento"
 
-#: models.py:280
+#: models.py:279
 msgid "Payment not identified."
 msgstr "Pagamento não identificado."
 
-#: models.py:297
+#: models.py:296
 #, python-brace-format
 msgid "Cielo create payment error: {0}"
 msgstr ""
 
-#: models.py:309
+#: models.py:308
 msgid "Order"
 msgstr "Pedido"
 
-#: models.py:311
+#: models.py:310
 msgid "Transaction ID"
 msgstr "ID da transação (TID)"
 
-#: models.py:313
+#: models.py:312
 msgid "Transaction status"
 msgstr "Estado"
 
-#: models.py:316
+#: models.py:315
 msgid "Creation date"
 msgstr "Data de criação"
 
-#: models.py:317
+#: models.py:316
 #: templates/cielo/admin/order_section_transaction_detail.jinja:40
 msgid "Last update"
 msgstr "Última atualização"
 
-#: models.py:319
+#: models.py:318
 msgid "Card holder"
 msgstr "Portador"
 
-#: models.py:320
+#: models.py:319
 #: templates/cielo/admin/order_section_transaction_detail.jinja:43
 msgid "Card brand"
 msgstr "Bandeira"
 
-#: models.py:321
+#: models.py:320
 #: templates/cielo/admin/order_section_transaction_detail.jinja:45
 msgid "Installments"
 msgstr "Parcelas"
 
-#: models.py:322
+#: models.py:321
 #: templates/cielo/admin/order_section_transaction_detail.jinja:44
 msgid "Product"
 msgstr "Produto"
 
-#: models.py:328
+#: models.py:327
 msgid "transaction total"
 msgstr "Total parcelado"
 
-#: models.py:329
+#: models.py:328
 msgid "total captured"
 msgstr "Total capturado"
 
-#: models.py:330
+#: models.py:329
 msgid "total reversed"
 msgstr "Total estornado"
 
-#: models.py:332
+#: models.py:331
 msgid "Authorization LR code"
 msgstr "Código LR autorização"
 
-#: models.py:333
+#: models.py:332
 #: templates/cielo/admin/order_section_transaction_detail.jinja:52
 msgid "Authorization NSU"
 msgstr "NSU"
 
-#: models.py:334
+#: models.py:333
 #: templates/cielo/admin/order_section_transaction_detail.jinja:55
 msgid "Authorization date"
 msgstr "Data autorização"
 
-#: models.py:336
+#: models.py:335
 msgid "ECI security level"
 msgstr "Nível segurança ECI"
 
-#: models.py:337
+#: models.py:336
 #: templates/cielo/admin/order_section_transaction_detail.jinja:61
 msgid "Authentication date"
 msgstr "Data autenticação"
 
-#: models.py:340
+#: models.py:339
 msgid "Cielo 1.5 transaction"
 msgstr "Transação Cielo v1.5"
 
-#: models.py:341
+#: models.py:340
 msgid "Cielo 1.5 transactions"
 msgstr "Transações Cielo v1.5"
 
-#: models.py:385
+#: models.py:384
 msgid "Fail to update Cielo transation info"
 msgstr "Falha ao atualizar informações da transação"
 
-#: models.py:485
+#: models.py:484
 msgid "Cielo installment interest"
 msgstr "Taxa de parcelamento Cielo"
 
-#: models.py:486
+#: models.py:485
 msgid "Captures and returns the total interest amount of an installment"
 msgstr "Captura e retorna o total de juros de um parcelamento"
 
-#: models.py:497
+#: models.py:496
 #, python-brace-format
 msgid "installment interest for {0}x"
 msgstr "taxa de juros para {0}x"
+
+#: models.py:502 models.py:505
+msgid "Discount percentage"
+msgstr "Percentual de desconto"
+
+#: models.py:506
+msgid "Applies a discount percentage over the basket's products"
+msgstr "Aplica um percentual de desconto sobre os produtos do carrinho"
+
+#: models.py:510
+#, python-brace-format
+msgid "products discount {0:.2f}%"
+msgstr "desconto nos produtos de {0:.2f}%"
 
 #: templates/cielo/admin/dashboard.jinja:4
 msgid "This version contains no information about transactions yet. Improvements are currently being developed.."
