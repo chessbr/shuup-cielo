@@ -34,14 +34,24 @@ class CieloPaymentForm(forms.Form):
                                  choices=[],
                                  widget=forms.RadioSelect())
 
-    cc_holder = forms.CharField(label=_('Holder'), required=True, max_length=50)
-    cc_number = forms.CharField(label=_('Number'), required=True, max_length=20)
+    cc_holder = forms.CharField(label=_('Holder'),
+                                required=True,
+                                max_length=50,
+                                help_text=_("As printed on the card"))
+
+    cc_number = forms.CharField(label=_('Card number'),
+                                required=True,
+                                max_length=20)
+
     cc_security_code = forms.CharField(label=_('Security code'), required=True,
                                        max_length=4, min_length=3)
+
     cc_valid_year = forms.CharField(label=_('Valid year'), required=True,
                                     max_length=4, min_length=4)
+
     cc_valid_month = forms.CharField(label=_('Valid month'), required=True,
                                      max_length=2, min_length=2)
+
     installments = forms.ChoiceField(label=_('Number of installments'),
                                      required=True,
                                      initial=1,

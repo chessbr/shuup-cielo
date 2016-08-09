@@ -7,730 +7,731 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Shuup Cielo 1.0.0\n"
-"Report-Msgid-Bugs-To: Christian Hess <chess@rockho.com.br>\n"
-"POT-Creation-Date: 2016-08-08 00:11-0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-08-09 00:31+0000\n"
 "PO-Revision-Date: 2016-08-07 23:12-0300\n"
 "Last-Translator: Christian Hess <chess@rockho.com.br>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: shuup_cielo/checkout.py:33
-msgid "Payment information"
-msgstr ""
-
-#: shuup_cielo/constants.py:26
-msgid "{0}x of {1} | Total={2})"
-msgstr ""
-
-#: shuup_cielo/constants.py:27
-msgid "{0}x of {1} | Total={2} | Interest rate: {3}%)"
-msgstr ""
-
-#: shuup_cielo/constants.py:73
-msgid "Created"
-msgstr ""
-
-#: shuup_cielo/constants.py:74
-msgid "In progress"
-msgstr ""
-
-#: shuup_cielo/constants.py:75
-msgid "Authenticated"
-msgstr ""
-
-#: shuup_cielo/constants.py:76
-msgid "Not authenticated"
-msgstr ""
-
-#: shuup_cielo/constants.py:77
-msgid "Authorized"
-msgstr ""
-
-#: shuup_cielo/constants.py:78
-msgid "Not authorized"
-msgstr ""
-
-#: shuup_cielo/constants.py:79
-msgid "Captured"
-msgstr ""
-
-#: shuup_cielo/constants.py:80
-msgid "Cancelled"
-msgstr ""
-
-#: shuup_cielo/constants.py:81
-msgid "Authenticating"
-msgstr ""
-
-#: shuup_cielo/constants.py:82
-msgid "Cancelling"
-msgstr ""
-
-#: shuup_cielo/constants.py:86
-msgid "Mensagem inválida"
-msgstr ""
-
-#: shuup_cielo/constants.py:87
-msgid "Credenciais inválidas"
-msgstr ""
-
-#: shuup_cielo/constants.py:88
-msgid "Transação inexistente"
-msgstr ""
-
-#: shuup_cielo/constants.py:89
-msgid "Código de Segurança Inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:90
-msgid "Inconsistência no envio do cartão"
-msgstr ""
-
-#: shuup_cielo/constants.py:91
-msgid "Modalidade não habilitada"
-msgstr ""
-
-#: shuup_cielo/constants.py:92 shuup_cielo/constants.py:102
-msgid "Número de parcelas inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:93
-msgid "Flag de autorização automática"
-msgstr ""
-
-#: shuup_cielo/constants.py:94
-msgid "Autorização Direta inválida"
-msgstr ""
-
-#: shuup_cielo/constants.py:95
-msgid "Autorização Direta sem Cartão"
-msgstr ""
-
-#: shuup_cielo/constants.py:96
-msgid "Identificador, TID, inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:97
-msgid "Código de segurança ausente"
-msgstr ""
-
-#: shuup_cielo/constants.py:98
-msgid "Indicador de código de segurança inconsistente"
-msgstr ""
-
-#: shuup_cielo/constants.py:99
-msgid "URL de Retorno não fornecida"
-msgstr ""
-
-#: shuup_cielo/constants.py:100
-msgid "Status não permite autorização"
-msgstr ""
-
-#: shuup_cielo/constants.py:101
-msgid "Prazo de autorização vencido"
-msgstr ""
-
-#: shuup_cielo/constants.py:103
-msgid "Encaminhamento a autorização não permitido"
-msgstr ""
-
-#: shuup_cielo/constants.py:104
-msgid "Status inválido para captura"
-msgstr ""
-
-#: shuup_cielo/constants.py:105
-msgid "Prazo de captura vencido"
-msgstr ""
-
-#: shuup_cielo/constants.py:106
-msgid "Valor de captura inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:107
-msgid "Falha ao capturar"
-msgstr ""
-
-#: shuup_cielo/constants.py:108
-msgid "Valor da taxa de embarque obrigatório"
-msgstr ""
-
-#: shuup_cielo/constants.py:109
-msgid "Bandeira inválida para utilização da Taxa de Embarque"
-msgstr ""
-
-#: shuup_cielo/constants.py:110
-msgid "Produto inválido para utilização da Taxa de Embarque"
-msgstr ""
-
-#: shuup_cielo/constants.py:111
-msgid "Prazo de cancelamento vencido"
-msgstr ""
-
-#: shuup_cielo/constants.py:112
-msgid "Falha ao cancelar"
-msgstr ""
-
-#: shuup_cielo/constants.py:113
-msgid "Valor de cancelamento é maior que valor autorizado."
-msgstr ""
-
-#: shuup_cielo/constants.py:114
-msgid "Recorrência Inválida"
-msgstr ""
-
-#: shuup_cielo/constants.py:115
-msgid "Token Inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:116
-msgid "Recorrência não habilitada"
-msgstr ""
-
-#: shuup_cielo/constants.py:117
-msgid "Transação com Token inválida"
-msgstr ""
-
-#: shuup_cielo/constants.py:118
-msgid "Número do cartão não fornecido"
-msgstr ""
-
-#: shuup_cielo/constants.py:119
-msgid "Validade do cartão não fornecido"
-msgstr ""
-
-#: shuup_cielo/constants.py:120
-msgid "Erro inesperado gerando Token"
-msgstr ""
-
-#: shuup_cielo/constants.py:121
-msgid "Transação Recorrente Inválida"
-msgstr ""
-
-#: shuup_cielo/constants.py:122
-msgid "XID não fornecido"
-msgstr ""
-
-#: shuup_cielo/constants.py:123
-msgid "CAVV não fornecido"
-msgstr ""
-
-#: shuup_cielo/constants.py:124
-msgid "XID e CAVV não fornecidos"
-msgstr ""
-
-#: shuup_cielo/constants.py:125
-msgid "CAVV com tamanho divergente"
-msgstr ""
-
-#: shuup_cielo/constants.py:126
-msgid "XID com tamanho divergente"
-msgstr ""
-
-#: shuup_cielo/constants.py:127
-msgid "ECI com tamanho divergente"
-msgstr ""
-
-#: shuup_cielo/constants.py:128
-msgid "ECI inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:129
-msgid "Erro interno de autenticação"
-msgstr ""
-
-#: shuup_cielo/constants.py:130
-msgid "Sistema indisponível"
-msgstr ""
-
-#: shuup_cielo/constants.py:131
-msgid "Timeout"
-msgstr ""
-
-#: shuup_cielo/constants.py:132
-msgid "Erro inesperado"
-msgstr ""
-
-#: shuup_cielo/constants.py:137 shuup_cielo/constants.py:144
-msgid "Transação autorizada"
-msgstr ""
-
-#: shuup_cielo/constants.py:138
-msgid "Transação referida pelo banco emissor"
-msgstr ""
-
-#: shuup_cielo/constants.py:139 shuup_cielo/constants.py:140
-#: shuup_cielo/constants.py:153 shuup_cielo/constants.py:154
-msgid "Transação False autorizada"
-msgstr ""
-
-#: shuup_cielo/constants.py:141 shuup_cielo/constants.py:158
-msgid "Tente novamente"
-msgstr ""
-
-#: shuup_cielo/constants.py:142 shuup_cielo/constants.py:149
-msgid "Cartão com restrição"
-msgstr ""
-
-#: shuup_cielo/constants.py:143
-msgid "Código de segurança inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:145
-msgid "Valor inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:146
-msgid "Cartão inválido"
-msgstr ""
-
-#: shuup_cielo/constants.py:147
-msgid "Banco emissor indisponível"
-msgstr ""
-
-#: shuup_cielo/constants.py:148
-msgid "Cancelamento False efetuado"
-msgstr ""
-
-#: shuup_cielo/constants.py:150
-msgid "Saldo insuficiente"
-msgstr ""
-
-#: shuup_cielo/constants.py:151
-msgid "Cartão vencido"
-msgstr ""
-
-#: shuup_cielo/constants.py:152
-msgid "Transação False permitida"
-msgstr ""
-
-#: shuup_cielo/constants.py:155
-msgid "Cartão False foi desbloqueado pelo portador"
-msgstr ""
-
-#: shuup_cielo/constants.py:156
-msgid "Erro no cartão"
-msgstr ""
-
-#: shuup_cielo/constants.py:157
-msgid "Banco fora do ar"
-msgstr ""
-
-#: shuup_cielo/constants.py:159
-msgid "Tempo excedido"
-msgstr ""
-
-#: shuup_cielo/constants.py:160
-msgid "Use função débito"
-msgstr ""
-
-#: shuup_cielo/constants.py:161
-msgid "Transação referida pela Cielo"
-msgstr ""
-
-#: shuup_cielo/constants.py:205
-msgid "Credit"
-msgstr ""
-
-#: shuup_cielo/constants.py:206
-msgid "Installment credit"
-msgstr ""
-
-#: shuup_cielo/constants.py:207
-msgid "Debit"
-msgstr ""
-
-#: shuup_cielo/constants.py:212
-msgid "Simple"
-msgstr ""
-
-#: shuup_cielo/constants.py:213
-msgid "PRICE table"
-msgstr ""
-
-#: shuup_cielo/constants.py:218
-msgid "Only authenticate"
-msgstr ""
-
-#: shuup_cielo/constants.py:219
-msgid "Only if the transaction gets authenticated"
-msgstr ""
-
-#: shuup_cielo/constants.py:220
-msgid "If the transaction gets authenticated or not"
-msgstr ""
-
-#: shuup_cielo/constants.py:221
-msgid "Direct, do not authenticate"
-msgstr ""
-
-#: shuup_cielo/constants.py:222
-msgid "Recurrent"
-msgstr ""
-
-#: shuup_cielo/forms.py:32
-msgid "Brand"
-msgstr ""
-
-#: shuup_cielo/forms.py:37
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:42
-msgid "Holder"
-msgstr ""
-
-#: shuup_cielo/forms.py:38
-msgid "Number"
-msgstr ""
-
-#: shuup_cielo/forms.py:39
-msgid "Security code"
-msgstr ""
-
-#: shuup_cielo/forms.py:41
-msgid "Valid year"
-msgstr ""
-
-#: shuup_cielo/forms.py:43
-msgid "Valid month"
-msgstr ""
-
-#: shuup_cielo/forms.py:45
-msgid "Number of installments"
-msgstr ""
-
-#: shuup_cielo/forms.py:104
-msgid "Invalid card number"
-msgstr ""
-
-#: shuup_cielo/forms.py:116
-msgid "This brand does not accept installments"
-msgstr ""
-
-#: shuup_cielo/forms.py:125
-msgid "Your card is expired"
-msgstr ""
-
-#: shuup_cielo/forms.py:128
-msgid "Invalid expiration date"
-msgstr ""
-
-#: shuup_cielo/models.py:57
-msgid "Cielo's affiliation number"
-msgstr ""
-
-#: shuup_cielo/models.py:58
-msgid "Cielo's affiliation secret key"
-msgstr ""
-
-#: shuup_cielo/models.py:60
-msgid "Auto capture transactions"
-msgstr ""
-
-#: shuup_cielo/models.py:62
-msgid "Enable this to capture transactions right after they get approved."
-msgstr ""
-
-#: shuup_cielo/models.py:65
-msgid "Authorization mode"
-msgstr ""
-
-#: shuup_cielo/models.py:68
-msgid "Select the authroization type for credit cards."
-msgstr ""
-
-#: shuup_cielo/models.py:70
-msgid "Maximum installments number"
-msgstr ""
-
-#: shuup_cielo/models.py:77
-msgid "Installments without interest"
-msgstr ""
-
-#: shuup_cielo/models.py:83
-msgid "How many installments will have no interest applied."
-msgstr ""
-
-#: shuup_cielo/models.py:86
-msgid "Interest type"
-msgstr ""
-
-#: shuup_cielo/models.py:91
-msgid "Interest rate"
-msgstr ""
-
-#: shuup_cielo/models.py:97
-msgid "Minimum installment amount"
-msgstr ""
-
-#: shuup_cielo/models.py:103
-msgid "Sandbox mode"
-msgstr ""
-
-#: shuup_cielo/models.py:105
-msgid "Enable this to activate Developer mode (test mode)."
-msgstr ""
-
-#: shuup_cielo/models.py:108 shuup_cielo/models.py:109
-msgid "Cielo Webservice v1.5"
-msgstr ""
-
-#: shuup_cielo/models.py:113
-msgid "Credit card"
-msgstr ""
-
-#: shuup_cielo/models.py:114
-msgid "Debit card"
-msgstr ""
-
-#: shuup_cielo/models.py:138
-msgid "Payment data is None when it was needed to proccess a Cielo transaction"
-msgstr ""
-
-#: shuup_cielo/models.py:139
-msgid "No payment identified."
-msgstr ""
-
-#: shuup_cielo/models.py:139 shuup_cielo/models.py:164
-#: shuup_cielo/models.py:279
-msgid "Order cancelled"
-msgstr ""
-
-#: shuup_cielo/models.py:161
-msgid ""
-"Installment interest total is different from the order payment method "
-"total."
-msgstr ""
-
-#: shuup_cielo/models.py:163
-msgid ""
-"Installment interest total is different from the order payment method "
-"total!"
-msgstr ""
-
-#: shuup_cielo/models.py:248
-msgid "Cielo transaction failed: {0}"
-msgstr ""
-
-#: shuup_cielo/models.py:252
-msgid "Invalid security code."
-msgstr ""
-
-#: shuup_cielo/models.py:254
-msgid "Unknown error."
-msgstr ""
-
-#: shuup_cielo/models.py:260
-msgid "Payment failed"
-msgstr ""
-
-#: shuup_cielo/models.py:279
-msgid "Payment not identified."
-msgstr ""
-
-#: shuup_cielo/models.py:296
-msgid "Cielo create payment error: {0}"
-msgstr ""
-
-#: shuup_cielo/models.py:308
-msgid "Order"
-msgstr ""
-
-#: shuup_cielo/models.py:310
-msgid "Transaction ID"
-msgstr ""
-
-#: shuup_cielo/models.py:312
-msgid "Transaction status"
-msgstr ""
-
-#: shuup_cielo/models.py:315
-msgid "Creation date"
-msgstr ""
-
-#: shuup_cielo/models.py:316
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:40
-msgid "Last update"
-msgstr ""
-
-#: shuup_cielo/models.py:318
-msgid "Card holder"
-msgstr ""
-
-#: shuup_cielo/models.py:319
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:43
-msgid "Card brand"
-msgstr ""
-
-#: shuup_cielo/models.py:320
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:45
-msgid "Installments"
-msgstr ""
-
-#: shuup_cielo/models.py:321
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:44
-msgid "Product"
-msgstr ""
-
-#: shuup_cielo/models.py:327
-msgid "transaction total"
-msgstr ""
-
-#: shuup_cielo/models.py:328
-msgid "total captured"
-msgstr ""
-
-#: shuup_cielo/models.py:329
-msgid "total reversed"
-msgstr ""
-
-#: shuup_cielo/models.py:331
-msgid "Authorization LR code"
-msgstr ""
-
-#: shuup_cielo/models.py:332
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:52
-msgid "Authorization NSU"
-msgstr ""
-
-#: shuup_cielo/models.py:333
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:55
-msgid "Authorization date"
-msgstr ""
-
-#: shuup_cielo/models.py:335
-msgid "ECI security level"
-msgstr ""
-
-#: shuup_cielo/models.py:336
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:61
-msgid "Authentication date"
-msgstr ""
-
-#: shuup_cielo/models.py:339
-msgid "Cielo 1.5 transaction"
-msgstr ""
-
-#: shuup_cielo/models.py:340
-msgid "Cielo 1.5 transactions"
-msgstr ""
-
-#: shuup_cielo/models.py:384
-msgid "Fail to update Cielo transation info"
-msgstr ""
-
-#: shuup_cielo/models.py:484
-msgid "Cielo installment interest"
-msgstr ""
-
-#: shuup_cielo/models.py:485
-msgid "Captures and returns the total interest amount of an installment"
-msgstr ""
-
-#: shuup_cielo/models.py:496
-msgid "installment interest for {0}x"
-msgstr ""
-
-#: shuup_cielo/admin/__init__.py:18 shuup_cielo/admin/__init__.py:46
+#: admin/__init__.py:18 admin/__init__.py:46
 msgid "Cielo"
 msgstr ""
 
-#: shuup_cielo/admin/__init__.py:53
+#: admin/__init__.py:53
 msgid "Show Dashboard"
 msgstr ""
 
-#: shuup_cielo/templates/cielo/auth_redirect.jinja:3
+#: checkout.py:33
+msgid "Payment information"
+msgstr ""
+
+#: constants.py:26
+#, python-brace-format
+msgid "{0}x of {1} | Total={2})"
+msgstr ""
+
+#: constants.py:27
+#, python-brace-format
+msgid "{0}x of {1} | Total={2} | Interest rate: {3}%)"
+msgstr ""
+
+#: constants.py:73
+msgid "Created"
+msgstr ""
+
+#: constants.py:74
+msgid "In progress"
+msgstr ""
+
+#: constants.py:75
+msgid "Authenticated"
+msgstr ""
+
+#: constants.py:76
+msgid "Not authenticated"
+msgstr ""
+
+#: constants.py:77
+msgid "Authorized"
+msgstr ""
+
+#: constants.py:78
+msgid "Not authorized"
+msgstr ""
+
+#: constants.py:79
+msgid "Captured"
+msgstr ""
+
+#: constants.py:80
+msgid "Cancelled"
+msgstr ""
+
+#: constants.py:81
+msgid "Authenticating"
+msgstr ""
+
+#: constants.py:82
+msgid "Cancelling"
+msgstr ""
+
+#: constants.py:86
+msgid "Mensagem inválida"
+msgstr ""
+
+#: constants.py:87
+msgid "Credenciais inválidas"
+msgstr ""
+
+#: constants.py:88
+msgid "Transação inexistente"
+msgstr ""
+
+#: constants.py:89
+msgid "Código de Segurança Inválido"
+msgstr ""
+
+#: constants.py:90
+msgid "Inconsistência no envio do cartão"
+msgstr ""
+
+#: constants.py:91
+msgid "Modalidade não habilitada"
+msgstr ""
+
+#: constants.py:92 constants.py:102
+msgid "Número de parcelas inválido"
+msgstr ""
+
+#: constants.py:93
+msgid "Flag de autorização automática"
+msgstr ""
+
+#: constants.py:94
+msgid "Autorização Direta inválida"
+msgstr ""
+
+#: constants.py:95
+msgid "Autorização Direta sem Cartão"
+msgstr ""
+
+#: constants.py:96
+msgid "Identificador, TID, inválido"
+msgstr ""
+
+#: constants.py:97
+msgid "Código de segurança ausente"
+msgstr ""
+
+#: constants.py:98
+msgid "Indicador de código de segurança inconsistente"
+msgstr ""
+
+#: constants.py:99
+msgid "URL de Retorno não fornecida"
+msgstr ""
+
+#: constants.py:100
+msgid "Status não permite autorização"
+msgstr ""
+
+#: constants.py:101
+msgid "Prazo de autorização vencido"
+msgstr ""
+
+#: constants.py:103
+msgid "Encaminhamento a autorização não permitido"
+msgstr ""
+
+#: constants.py:104
+msgid "Status inválido para captura"
+msgstr ""
+
+#: constants.py:105
+msgid "Prazo de captura vencido"
+msgstr ""
+
+#: constants.py:106
+msgid "Valor de captura inválido"
+msgstr ""
+
+#: constants.py:107
+msgid "Falha ao capturar"
+msgstr ""
+
+#: constants.py:108
+msgid "Valor da taxa de embarque obrigatório"
+msgstr ""
+
+#: constants.py:109
+msgid "Bandeira inválida para utilização da Taxa de Embarque"
+msgstr ""
+
+#: constants.py:110
+msgid "Produto inválido para utilização da Taxa de Embarque"
+msgstr ""
+
+#: constants.py:111
+msgid "Prazo de cancelamento vencido"
+msgstr ""
+
+#: constants.py:112
+msgid "Falha ao cancelar"
+msgstr ""
+
+#: constants.py:113
+msgid "Valor de cancelamento é maior que valor autorizado."
+msgstr ""
+
+#: constants.py:114
+msgid "Recorrência Inválida"
+msgstr ""
+
+#: constants.py:115
+msgid "Token Inválido"
+msgstr ""
+
+#: constants.py:116
+msgid "Recorrência não habilitada"
+msgstr ""
+
+#: constants.py:117
+msgid "Transação com Token inválida"
+msgstr ""
+
+#: constants.py:118
+msgid "Número do cartão não fornecido"
+msgstr ""
+
+#: constants.py:119
+msgid "Validade do cartão não fornecido"
+msgstr ""
+
+#: constants.py:120
+msgid "Erro inesperado gerando Token"
+msgstr ""
+
+#: constants.py:121
+msgid "Transação Recorrente Inválida"
+msgstr ""
+
+#: constants.py:122
+msgid "XID não fornecido"
+msgstr ""
+
+#: constants.py:123
+msgid "CAVV não fornecido"
+msgstr ""
+
+#: constants.py:124
+msgid "XID e CAVV não fornecidos"
+msgstr ""
+
+#: constants.py:125
+msgid "CAVV com tamanho divergente"
+msgstr ""
+
+#: constants.py:126
+msgid "XID com tamanho divergente"
+msgstr ""
+
+#: constants.py:127
+msgid "ECI com tamanho divergente"
+msgstr ""
+
+#: constants.py:128
+msgid "ECI inválido"
+msgstr ""
+
+#: constants.py:129
+msgid "Erro interno de autenticação"
+msgstr ""
+
+#: constants.py:130
+msgid "Sistema indisponível"
+msgstr ""
+
+#: constants.py:131
+msgid "Timeout"
+msgstr ""
+
+#: constants.py:132
+msgid "Erro inesperado"
+msgstr ""
+
+#: constants.py:137 constants.py:144
+msgid "Transação autorizada"
+msgstr ""
+
+#: constants.py:138
+msgid "Transação referida pelo banco emissor"
+msgstr ""
+
+#: constants.py:139 constants.py:140 constants.py:153 constants.py:154
+msgid "Transação False autorizada"
+msgstr ""
+
+#: constants.py:141 constants.py:158
+msgid "Tente novamente"
+msgstr ""
+
+#: constants.py:142 constants.py:149
+msgid "Cartão com restrição"
+msgstr ""
+
+#: constants.py:143
+msgid "Código de segurança inválido"
+msgstr ""
+
+#: constants.py:145
+msgid "Valor inválido"
+msgstr ""
+
+#: constants.py:146
+msgid "Cartão inválido"
+msgstr ""
+
+#: constants.py:147
+msgid "Banco emissor indisponível"
+msgstr ""
+
+#: constants.py:148
+msgid "Cancelamento False efetuado"
+msgstr ""
+
+#: constants.py:150
+msgid "Saldo insuficiente"
+msgstr ""
+
+#: constants.py:151
+msgid "Cartão vencido"
+msgstr ""
+
+#: constants.py:152
+msgid "Transação False permitida"
+msgstr ""
+
+#: constants.py:155
+msgid "Cartão False foi desbloqueado pelo portador"
+msgstr ""
+
+#: constants.py:156
+msgid "Erro no cartão"
+msgstr ""
+
+#: constants.py:157
+msgid "Banco fora do ar"
+msgstr ""
+
+#: constants.py:159
+msgid "Tempo excedido"
+msgstr ""
+
+#: constants.py:160
+msgid "Use função débito"
+msgstr ""
+
+#: constants.py:161
+msgid "Transação referida pela Cielo"
+msgstr ""
+
+#: constants.py:205
+msgid "Credit"
+msgstr ""
+
+#: constants.py:206
+msgid "Installment credit"
+msgstr ""
+
+#: constants.py:207
+msgid "Debit"
+msgstr ""
+
+#: constants.py:212
+msgid "Simple"
+msgstr ""
+
+#: constants.py:213
+msgid "PRICE table"
+msgstr ""
+
+#: constants.py:218
+msgid "Only authenticate"
+msgstr ""
+
+#: constants.py:219
+msgid "Only if the transaction gets authenticated"
+msgstr ""
+
+#: constants.py:220
+msgid "If the transaction gets authenticated or not"
+msgstr ""
+
+#: constants.py:221
+msgid "Direct, do not authenticate"
+msgstr ""
+
+#: constants.py:222
+msgid "Recurrent"
+msgstr ""
+
+#: forms.py:32 templates/cielo/checkout.jinja:18
+msgid "Brand"
+msgstr ""
+
+#: forms.py:37 templates/cielo/admin/order_section_transaction_detail.jinja:42
+msgid "Holder"
+msgstr ""
+
+#: forms.py:40
+msgid "As printed on the card"
+msgstr ""
+
+#: forms.py:42
+msgid "Card number"
+msgstr ""
+
+#: forms.py:46
+msgid "Security code"
+msgstr ""
+
+#: forms.py:49
+msgid "Valid year"
+msgstr ""
+
+#: forms.py:52
+msgid "Valid month"
+msgstr ""
+
+#: forms.py:55
+msgid "Number of installments"
+msgstr ""
+
+#: forms.py:114
+msgid "Invalid card number"
+msgstr ""
+
+#: forms.py:126
+msgid "This brand does not accept installments"
+msgstr ""
+
+#: forms.py:135
+msgid "Your card is expired"
+msgstr ""
+
+#: forms.py:138
+msgid "Invalid expiration date"
+msgstr ""
+
+#: models.py:58
+msgid "Cielo's affiliation number"
+msgstr ""
+
+#: models.py:59
+msgid "Cielo's affiliation secret key"
+msgstr ""
+
+#: models.py:61
+msgid "Auto capture transactions"
+msgstr ""
+
+#: models.py:63
+msgid "Enable this to capture transactions right after they get approved."
+msgstr ""
+
+#: models.py:66
+msgid "Authorization mode"
+msgstr ""
+
+#: models.py:69
+msgid "Select the authroization type for credit cards."
+msgstr ""
+
+#: models.py:71
+msgid "Maximum installments number"
+msgstr ""
+
+#: models.py:78
+msgid "Installments without interest"
+msgstr ""
+
+#: models.py:84
+msgid "How many installments will have no interest applied."
+msgstr ""
+
+#: models.py:87
+msgid "Interest type"
+msgstr ""
+
+#: models.py:92
+msgid "Interest rate"
+msgstr ""
+
+#: models.py:98
+msgid "Minimum installment amount"
+msgstr ""
+
+#: models.py:104
+msgid "Sandbox mode"
+msgstr ""
+
+#: models.py:106
+msgid "Enable this to activate Developer mode (test mode)."
+msgstr ""
+
+#: models.py:109 models.py:110
+msgid "Cielo Webservice v1.5"
+msgstr ""
+
+#: models.py:114
+msgid "Credit card"
+msgstr ""
+
+#: models.py:115
+msgid "Debit card"
+msgstr ""
+
+#: models.py:139
+msgid "Payment data is None when it was needed to proccess a Cielo transaction"
+msgstr ""
+
+#: models.py:140
+msgid "No payment identified."
+msgstr ""
+
+#: models.py:140 models.py:165 models.py:280
+msgid "Order cancelled"
+msgstr ""
+
+#: models.py:162
+msgid "Installment interest total is different from the order payment method total."
+msgstr ""
+
+#: models.py:164
+msgid "Installment interest total is different from the order payment method total!"
+msgstr ""
+
+#: models.py:249
+#, python-brace-format
+msgid "Cielo transaction failed: {0}"
+msgstr ""
+
+#: models.py:253
+msgid "Invalid security code."
+msgstr ""
+
+#: models.py:255
+msgid "Unknown error."
+msgstr ""
+
+#: models.py:261
+msgid "Payment failed"
+msgstr ""
+
+#: models.py:280
+msgid "Payment not identified."
+msgstr ""
+
+#: models.py:297
+#, python-brace-format
+msgid "Cielo create payment error: {0}"
+msgstr ""
+
+#: models.py:309
+msgid "Order"
+msgstr ""
+
+#: models.py:311
+msgid "Transaction ID"
+msgstr ""
+
+#: models.py:313
+msgid "Transaction status"
+msgstr ""
+
+#: models.py:316
+msgid "Creation date"
+msgstr ""
+
+#: models.py:317
+#: templates/cielo/admin/order_section_transaction_detail.jinja:40
+msgid "Last update"
+msgstr ""
+
+#: models.py:319
+msgid "Card holder"
+msgstr ""
+
+#: models.py:320
+#: templates/cielo/admin/order_section_transaction_detail.jinja:43
+msgid "Card brand"
+msgstr ""
+
+#: models.py:321
+#: templates/cielo/admin/order_section_transaction_detail.jinja:45
+msgid "Installments"
+msgstr ""
+
+#: models.py:322
+#: templates/cielo/admin/order_section_transaction_detail.jinja:44
+msgid "Product"
+msgstr ""
+
+#: models.py:328
+msgid "transaction total"
+msgstr ""
+
+#: models.py:329
+msgid "total captured"
+msgstr ""
+
+#: models.py:330
+msgid "total reversed"
+msgstr ""
+
+#: models.py:332
+msgid "Authorization LR code"
+msgstr ""
+
+#: models.py:333
+#: templates/cielo/admin/order_section_transaction_detail.jinja:52
+msgid "Authorization NSU"
+msgstr ""
+
+#: models.py:334
+#: templates/cielo/admin/order_section_transaction_detail.jinja:55
+msgid "Authorization date"
+msgstr ""
+
+#: models.py:336
+msgid "ECI security level"
+msgstr ""
+
+#: models.py:337
+#: templates/cielo/admin/order_section_transaction_detail.jinja:61
+msgid "Authentication date"
+msgstr ""
+
+#: models.py:340
+msgid "Cielo 1.5 transaction"
+msgstr ""
+
+#: models.py:341
+msgid "Cielo 1.5 transactions"
+msgstr ""
+
+#: models.py:385
+msgid "Fail to update Cielo transation info"
+msgstr ""
+
+#: models.py:485
+msgid "Cielo installment interest"
+msgstr ""
+
+#: models.py:486
+msgid "Captures and returns the total interest amount of an installment"
+msgstr ""
+
+#: models.py:497
+#, python-brace-format
+msgid "installment interest for {0}x"
+msgstr ""
+
+#: templates/cielo/admin/dashboard.jinja:4
+msgid "This version contains no information about transactions yet. Improvements are currently being developed.."
+msgstr ""
+
+#: templates/cielo/admin/dashboard.jinja:6
+msgid "Version:"
+msgstr ""
+
+#: templates/cielo/admin/order_section.jinja:1
+msgid "Transactions"
+msgstr ""
+
+#: templates/cielo/admin/order_section_extra_js.jinja:14
+msgid "There was an error refreshing the transaction."
+msgstr ""
+
+#: templates/cielo/admin/order_section_extra_js.jinja:32
+msgid "There was an error capturing the transaction."
+msgstr ""
+
+#: templates/cielo/admin/order_section_extra_js.jinja:50
+msgid "There was an error canceling the transaction."
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:16
+msgid "TID"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:17
+msgid "Create date"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:21
+#: templates/cielo/admin/order_section_transaction_detail.jinja:25
+#: templates/cielo/admin/order_section_transaction_detail.jinja:29
+#: templates/cielo/admin/order_section_transaction_detail.jinja:33
+#: templates/cielo/admin/order_section_transaction_detail.jinja:36
+msgid "Status"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:47
+msgid "Total"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:48
+msgid "Total captured"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:49
+msgid "Total canceled"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:51
+msgid "Authorization LR"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:58
+msgid "Authentication ECI"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:65
+msgid "Refresh"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:70
+msgid "Capture"
+msgstr ""
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:75
+msgid "Cancel"
+msgstr ""
+
+#: templates/cielo/auth_redirect.jinja:3
 msgid "Redirecting.."
 msgstr ""
 
-#: shuup_cielo/templates/cielo/auth_redirect.jinja:9
+#: templates/cielo/auth_redirect.jinja:9
 msgid "Almost there.."
 msgstr ""
 
-#: shuup_cielo/templates/cielo/auth_redirect.jinja:10
-msgid ""
-"You are beeing redirected to authentication page. <strong>Do not close "
-"this page</strong>."
+#: templates/cielo/auth_redirect.jinja:10
+msgid "You are beeing redirected to authentication page. <strong>Do not close this page</strong>."
 msgstr ""
 
-#: shuup_cielo/templates/cielo/auth_redirect.jinja:10
+#: templates/cielo/auth_redirect.jinja:10
 #, python-format
 msgid "If it takes too long, you can always <a href=\"%(url)s\">click here</a>."
 msgstr ""
 
-#: shuup_cielo/templates/cielo/admin/dashboard.jinja:4
-msgid ""
-"This version contains no information about transactions yet. Improvements"
-" are currently being developed.."
+#: templates/cielo/checkout.jinja:12
+msgid "Credit card information"
 msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/dashboard.jinja:6
-msgid "Version:"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section.jinja:1
-msgid "Transactions"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_extra_js.jinja:14
-msgid "There was an error refreshing the transaction."
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_extra_js.jinja:32
-msgid "There was an error capturing the transaction."
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_extra_js.jinja:50
-msgid "There was an error canceling the transaction."
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:16
-msgid "TID"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:17
-msgid "Create date"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:21
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:25
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:29
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:33
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:36
-msgid "Status"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:47
-msgid "Total"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:48
-msgid "Total captured"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:49
-msgid "Total canceled"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:51
-msgid "Authorization LR"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:58
-msgid "Authentication ECI"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:65
-msgid "Refresh"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:70
-msgid "Capture"
-msgstr ""
-
-#: shuup_cielo/templates/cielo/admin/order_section_transaction_detail.jinja:75
-msgid "Cancel"
-msgstr ""
-

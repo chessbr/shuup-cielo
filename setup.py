@@ -7,25 +7,15 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 
-from babel.messages import frontend as babel
 import setuptools
 
 """
-    How to translate:
-    Babel integration: http://babel.pocoo.org/en/stable/setup.html
+TIP:
+    To extract messages:
+        python -m shuup_workbench shuup_makemessages --no-pot-date --no-wrap -l pt_BR --include-location
 
-    - Extract messages:
-        `python setup.py extract_messages --output-file shuup_cielo/locale/django.pot 
-            --project "Shuup Cielo" --copyright-holder "Rockho Team <rockho@rockho.com.br>"`
-
-    - Update an existing catalog (language):
-        `python setup.py update_catalog -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale -D django`
-
-    - Compile catalog:
-        `python setup.py compile_catalog -d shuup_cielo/locale -l pt_BR -D django`
-
-    - Create a new catalog (language):
-        `python setup.py init_catalog -l pt_BR -i shuup_cielo/locale/django.pot -d shuup_cielo/locale -D django`
+    To compile messages:
+        python -m shuup_workbench compilemessages
 """
 
 NAME = 'shuup-cielo'
@@ -57,16 +47,5 @@ if __name__ == '__main__':
         packages=["shuup_cielo"],
         include_package_data=True,
         install_requires=REQUIRES,
-        entry_points={"shuup.addon": "shuup_cielo=shuup_cielo"},
-        cmdclass={'compile_catalog': babel.compile_catalog,
-                  'extract_messages': babel.extract_messages,
-                  'init_catalog': babel.init_catalog,
-                  'update_catalog': babel.update_catalog},
-        message_extractors={
-            'shuup_cielo': [
-                ('**.py', 'python', None),
-                ('**/templates/**.html', 'jinja2', None),
-                ('**/templates/**.jinja', 'jinja2', None)
-            ],
-        }
+        entry_points={"shuup.addon": "shuup_cielo=shuup_cielo"}
     )
