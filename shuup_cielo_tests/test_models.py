@@ -6,16 +6,19 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
-from shuup.testing.factories import get_default_payment_method,\
-    get_default_shipping_method, get_default_supplier, create_product
-import pytest
-from shuup_cielo.models import DiscountPercentageBehaviorComponent
-from shuup_tests.core.test_order_creator import seed_source
-from shuup.core.models._order_lines import OrderLineType
 from decimal import Decimal
 
-# TODO:
-# Testar CieloWS15Transaction
+import pytest
+
+from shuup_cielo.models import DiscountPercentageBehaviorComponent
+from shuup_tests.core.test_order_creator import seed_source
+
+from shuup.core.models._order_lines import OrderLineType
+from shuup.testing.factories import (
+    create_product, get_default_payment_method, get_default_shipping_method, get_default_supplier
+)
+
+
 # Testar InstallmentContext
 
 @pytest.mark.django_db

@@ -49,7 +49,7 @@ def test_validate_cc_number():
     assert is_cc_valid('371508228528470') is True
     assert is_cc_valid('342485720394451') is True
     assert is_cc_valid('349696561160339') is True
-    
+
 def test_safe_inf():
     assert safe_int('') == 0
     assert safe_int(None) == 0
@@ -69,7 +69,7 @@ def test_price_interest():
     total, installment = InstallmentCalculator.price_interest(Decimal(74085.12), 27, Decimal(7.54))
     assert abs(installment - Decimal(6498.98)) < 0.01
     assert abs(total - Decimal(175472.57)) < 0.01
-    
+
     # Valor financiado=1000  parcelas=10  juros=1.99%
     total, installment = InstallmentCalculator.price_interest(Decimal(1000), 10, Decimal(1.99))
     assert abs(installment - Decimal(111.27)) < 0.01
@@ -80,7 +80,7 @@ def test_simple_interest():
     total, installment = InstallmentCalculator.simple_interest(Decimal(74085.12), 27, Decimal(7.54))
     assert abs(installment - Decimal(8329.91)) < 0.01
     assert abs(total - Decimal(224907.60)) < 0.01
-    
+
     # Valor financiado=1000  parcelas=10  juros=1.99%
     total, installment = InstallmentCalculator.simple_interest(Decimal(1000), 10, Decimal(1.99))
     assert abs(installment - Decimal(119.9)) < 0.01

@@ -9,17 +9,18 @@
 
 from __future__ import unicode_literals
 
-from shuup_cielo.models import CieloWS15PaymentProcessor,\
-    DiscountPercentageBehaviorComponent
+from shuup_cielo.models import (
+    CieloConfig, CieloPaymentProcessor, DiscountPercentageBehaviorComponent
+)
 
 from shuup.admin.forms import ShuupAdminForm
 
 from django import forms
 
 
-class CieloWS15PaymentProcessorForm(ShuupAdminForm):
+class CieloPaymentProcessorForm(ShuupAdminForm):
     class Meta:
-        model = CieloWS15PaymentProcessor
+        model = CieloPaymentProcessor
         exclude = ["identifier"]
         widgets = {
             'ec_key': forms.PasswordInput(render_value=True),
@@ -30,3 +31,9 @@ class DiscountPercentageBehaviorComponentForm(forms.ModelForm):
     class Meta:
         model = DiscountPercentageBehaviorComponent
         exclude = ["identifier"]
+
+
+class CieloConfigForm(forms.ModelForm):
+    class Meta:
+        model = CieloConfig
+        exclude = []

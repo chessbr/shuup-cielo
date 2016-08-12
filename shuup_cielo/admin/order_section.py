@@ -8,13 +8,13 @@
 # LICENSE file in the root directory of this source tree.
 
 from shuup_cielo.constants import CieloTransactionStatus
-from shuup_cielo.models import CieloWS15PaymentProcessor, CieloWS15Transaction
+from shuup_cielo.models import CieloPaymentProcessor, CieloTransaction
 
 from shuup.admin.base import OrderSection
 
 
 class CieloOrderSection(OrderSection):
-    identifier = 'cielows15'
+    identifier = 'cielo'
     name = 'Cielo'
     icon = 'fa-credit-card'
     template = 'cielo/admin/order_section.jinja'
@@ -23,11 +23,11 @@ class CieloOrderSection(OrderSection):
 
     @staticmethod
     def visible_for_order(order):
-        return isinstance(order.payment_method.payment_processor, CieloWS15PaymentProcessor)
+        return isinstance(order.payment_method.payment_processor, CieloPaymentProcessor)
 
     @staticmethod
     def get_context_data(order):
         return {
             'CieloTransactionStatus': CieloTransactionStatus,
-            'transactions': CieloWS15Transaction.objects.filter(order=order).order_by('id')
+            'transactions': CieloTransaction.objects.filter(order_transaction__order=order).order_by('id')
         }

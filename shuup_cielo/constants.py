@@ -8,20 +8,23 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
+from decimal import Decimal
+
 from enumfields import Enum
 
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+# precisão de 2 casas decimais apenas
+CIELO_DECIMAL_PRECISION = Decimal('0.01')
+
 CIELO_SERVICE_CREDIT = 'credit'
 CIELO_SERVICE_DEBIT = 'debit'
 
-CIELO_CREDIT_CARD_INFO_KEY = 'cielows15_credit'
-CIELO_DEBIT_CARD_INFO_KEY = 'cielows15_debit'
-CIELO_INSTALLMENT_INFO_KEY = 'cielows15_installment'
-CIELO_TID_INFO_KEY = 'cielows15_tid'
-
+CIELO_CREDIT_CARD_INFO_KEY = 'cielo_credit'
+CIELO_DEBIT_CARD_INFO_KEY = 'cielo_debit'
+CIELO_TID_INFO_KEY = 'cielo_tid'
 
 INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING = _('{0}x of {1} | Total={2})')
 INSTALLMENT_CHOICE_WITH_INTEREST_STRING = _('{0}x of {1} | Total={2} | Interest rate: {3}%)')
@@ -58,6 +61,7 @@ class CieloCardBrand(object):
 
 
 class CieloTransactionStatus(Enum):
+    NotCreated = -1
     Created = 0
     InProgress = 1
     Authenticated = 2
@@ -70,6 +74,7 @@ class CieloTransactionStatus(Enum):
     Cancelling = 12
 
     class Labels:
+        NotCreated = _('Not created')
         Created = _('Created')
         InProgress = _('In progress')
         Authenticated = _('Authenticated')
@@ -134,32 +139,38 @@ CieloErrorMap = {
 
 
 CieloAuthorizationCode = {
-    '0': {'msg': _('Transação autorizada'), 'retry': False},
-    '1': {'msg': _('Transação referida pelo banco emissor'), 'retry': False},
-    '4': {'msg': _('Transação False autorizada'), 'retry': True},
-    '5': {'msg': _('Transação False autorizada'), 'retry': True},
-    '6': {'msg': _('Tente novamente'), 'retry': True},
-    '7': {'msg': _('Cartão com restrição'), 'retry': False},
-    '8': {'msg': _('Código de segurança inválido'), 'retry': False},
-    '11': {'msg': _('Transação autorizada'), 'retry': False},
-    '13': {'msg': _('Valor inválido'), 'retry': False},
-    '14': {'msg': _('Cartão inválido'), 'retry': False},
-    '15': {'msg': _('Banco emissor indisponível'), 'retry': True},
-    '21': {'msg': _('Cancelamento False efetuado'), 'retry': False},
-    '41': {'msg': _('Cartão com restrição'), 'retry': False},
-    '51': {'msg': _('Saldo insuficiente'), 'retry': True},
-    '54': {'msg': _('Cartão vencido'), 'retry': False},
-    '57': {'msg': _('Transação False permitida'), 'retry': True},
-    '60': {'msg': _('Transação False autorizada'), 'retry': False},
-    '62': {'msg': _('Transação False autorizada'), 'retry': False},
-    '78': {'msg': _('Cartão False foi desbloqueado pelo portador'), 'retry': True},
-    '82': {'msg': _('Erro no cartão'), 'retry': True},
-    '91': {'msg': _('Banco fora do ar'), 'retry': True},
-    '96': {'msg': _('Tente novamente'), 'retry': True},
-    'AA': {'msg': _('Tempo excedido'), 'retry': True},
-    'AC': {'msg': _('Use função débito'), 'retry': False},
-    'GA': {'msg': _('Transação referida pela Cielo'), 'retry': True},
+    '00': {'msg': _('Autorizado.'), 'internal_msg': _('Transação autorizada'), 'retry': False},
+    '01': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Transação referida pelo banco emissor'), 'retry': False},
+    '04': {'msg': _('Tente novamente.'), 'internal_msg': _('Transação não autorizada'), 'retry': True},
+    '05': {'msg': _('Tente novamente.'), 'internal_msg': _('Transação não autorizada'), 'retry': True},
+    '06': {'msg': _('Tente novamente.'), 'internal_msg': _('Tente novamente'), 'retry': True},
+    '07': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Cartão com restrição'), 'retry': False},
+    '08': {'msg': _('Código de segurança inválido.'), 'internal_msg': _('Código de segurança inválido'), 'retry': False},
+    '11': {'msg': _('Autorizado.'), 'internal_msg': _('Transação autorizada'), 'retry': False},
+    '13': {'msg': _('Valor inválido.'), 'internal_msg': _('Valor inválido'), 'retry': False},
+    '14': {'msg': _('Cartão inválido. Informe corretamente os dados e tente novamente.'), 'internal_msg': _('Cartão inválido'), 'retry': False},
+    '15': {'msg': _('Aguarde alguns instantes e tente novamente.'), 'internal_msg': _('Banco emissor indisponível'), 'retry': True},
+    '21': {'msg': _('Problema interno. Contate o atendimento da loja.'), 'internal_msg': _('Cancelamento não efetuado'), 'retry': False},
+    '41': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Cartão com restrição'), 'retry': False},
+    '51': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Saldo insuficiente'), 'retry': True},
+    '54': {'msg': _('Cartão vencido.'), 'internal_msg': _('Cartão vencido'), 'retry': False},
+    '57': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Transação não permitida'), 'retry': True},
+    '60': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Transação não autorizada'), 'retry': False},
+    '62': {'msg': _('Contate o emissor do seu cartão.'), 'internal_msg': _('Transação não autorizada'), 'retry': False},
+    '78': {'msg': _('Cartão bloqueado.'), 'internal_msg': _('Cartão não foi desbloqueado pelo portador'), 'retry': True},
+    '82': {'msg': _('Cartão inválido.'), 'internal_msg': _('Erro no cartão'), 'retry': True},
+    '91': {'msg': _('Aguarde alguns instantes e tente novamente.'), 'internal_msg': _('Banco fora do ar'), 'retry': True},
+    '96': {'msg': _('Aguarde alguns instantes e tente novamente.'), 'internal_msg': _('Tente novamente'), 'retry': True},
+    'AA': {'msg': _('Aguarde alguns instantes e tente novamente.'), 'internal_msg': _('Tempo excedido'), 'retry': True},
+    'AC': {'msg': _('Cartão somente aceita a função Débito. Altere a forma de pagamento.'), 'internal_msg': _('Use função débito'), 'retry': False},
+    'GA': {'msg': _('Aguarde alguns instantes e tente novamente.'), 'internal_msg': _('Transação referida pela Cielo'), 'retry': True},
 }
+
+
+CIELO_UKNOWN_ERROR_MSG = _('Unknown error')
+
+
+CIELO_AUTHORIZED_STATUSES = ("00", "11")
 
 
 class CieloAuthorizationType(object):
@@ -172,14 +183,54 @@ class CieloAuthorizationType(object):
 
 # Matrix dos produtos Cielo contendo o que cada bandeira aceita
 CieloProductMatrix = {
-    CieloCardBrand.Visa:        {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: True},
-    CieloCardBrand.Mastercard:  {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: True},
-    CieloCardBrand.Amex:        {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: False},
-    CieloCardBrand.Elo:         {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: False},
-    CieloCardBrand.Diners:      {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: False},
-    CieloCardBrand.Discover:    {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: False,  CieloProduct.Debit: False},
-    CieloCardBrand.Jcb:         {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: False},
-    CieloCardBrand.Aura:        {CieloProduct.Credit: True,    CieloProduct.InstallmentCredit: True,   CieloProduct.Debit: False},
+    CieloCardBrand.Visa: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: True,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Mastercard: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: True,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Amex: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: False,
+        "cvv_length": 4
+    },
+    CieloCardBrand.Elo: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: False,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Diners: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: False,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Discover: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: False,
+        CieloProduct.Debit: False,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Jcb: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: False,
+        "cvv_length": 3
+    },
+    CieloCardBrand.Aura: {
+        CieloProduct.Credit: True,
+        CieloProduct.InstallmentCredit: True,
+        CieloProduct.Debit: False,
+        "cvv_length": 3
+    }
 }
 
 

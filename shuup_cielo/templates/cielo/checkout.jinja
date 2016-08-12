@@ -1,19 +1,31 @@
 {% extends "shuup/front/checkout/_base.jinja" %}
-{% from "shuup/front/checkout/_buttons.jinja" import default_buttons %}
+{% from "shuup/front/checkout/_buttons.jinja" import buttons_container %}
 
 {% block checkout_phase_content %}
-<form role="form" method="post" action="" id="cielo">
-     {% csrf_token %}
+<form role="form" method="post" id="cc_form">
+    {% csrf_token %}
 
-    <div class="well">
+    <div class="well" id="form-content">
         <fieldset>
             <div class="row">
                 <div class="title col-md-9 col-md-offset-3">
                     <legend>{% trans %}Credit card information{% endtrans %}</legend>
                 </div>
             </div>
-            <div id="cc_info" class="form-horizontal">
 
+            <div class="col-md-12" id="messages">
+            
+                {% if has_valid_transaction %}
+                <div class="alert alert-warning" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only"></span>
+                    <strong>{{ _("Warning: transaction already authorized!") }} </strong>{{ _("A valid and authorized transaction already exists. To cancel the current transaction and change the payment information, just fill and submit this form again.") }}
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div id="cc_info" class="form-horizontal">
                 <div class="col-md-12 form-group required-field">
                     <div class="col-md-3 control-label vertical-center">{% trans %}Brand{% endtrans %}</div>
                     <div class="col-md-9 btn-group" data-toggle="buttons">
@@ -44,6 +56,112 @@
         </fieldset>
     </div>
 
-    {{ default_buttons() }}
+    {% call buttons_container() %}
+    <div class="pull-right">
+
+    {% if has_valid_transaction %}
+    <a class="btn btn-danger btn-lg" href="{{ url("shuup:checkout", phase=next_phase.identifier) }}">{{ _("Skip") }}</a>
+    {% endif %}
+
+    <button type="button" class="btn btn-primary btn-lg btn-default" id="process-transaction">
+        <i class="fa fa-check"></i> {% trans %}Continue{% endtrans %}
+    </button>
+    </div>
+    {% endcall %}
+    
 </form>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $("input[name=cc_brand]").change(function(){
+        var data = { cc_brand:this.value };
+        var options = $("#{{ form.installments.id_for_label }}");
+        options.empty();
+
+        $.getJSON("{{ url('shuup:cielo_get_installment_options') }}", data)
+        .done(function(result){
+            $.each(result.installments, function(index, item){
+                options.append($('<option />').val(item.number).text(item.name));
+            });
+        })
+        .fail(function(){
+            options.append($('<option />').val(0).text('{{ _("Failed to retrieve installments") }}'));
+        });
+    });
+
+    function disableForm(){
+        $("#process-transaction").attr("disabled", true);
+        $("#cc_form input").attr("readonly", true);
+    }
+
+    function enableForm(){
+        $("#process-transaction").attr("disabled", false);
+        $("#cc_form input").attr("readonly", false);
+    }
+    
+    function clearMessages(){
+        $("#messages").empty();
+    }
+
+    function addMessage(message, style_class){
+        $("#messages").append('<div class="alert alert-' + style_class + ' " role="alert">'+
+                           '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+
+                           '<span class="sr-only">Info</span>' + 
+                            message + '</div>');
+    }
+
+    function scrollTop(){
+        $('html, body').animate({scrollTop: $("#form-content").offset().top}, 500);
+    }
+
+    $("#process-transaction").click(function(){
+        disableForm();
+        scrollTop();
+        clearMessages();
+
+        addMessage('{{ _("Please, wait..") }}', 'info');
+
+        $("#cc_form div").removeClass("has-error");
+        $("[name=errors-block]").remove();
+
+        $.post('{{ url("shuup:cielo_make_transaction") }}', $("#cc_form").serialize())
+        .done(function (result){
+            clearMessages();
+
+            if(result.success){
+                window.location = result.redirect_url;
+            }else if(result["error"] != undefined){
+                addMessage(result.error, 'danger');
+            }
+        })
+        .fail(function(jqXHR, textStatus){
+            clearMessages();
+
+            try {
+                var errors = $.parseJSON(jqXHR.responseText);
+
+                $.each(errors.fields, function(field, field_errors){
+                    var input = $("[name="+field+"]");
+
+                    $.each(field_errors, function(index, error){
+                        input.parent("div").append('<span class="help-block" name="errors-block">'+ error +'</span>');
+                    });
+
+                    input.parent("div").addClass("has-error");
+                });
+
+                $.each(errors.form, function(index, error){
+                    addMessage(error, 'danger');
+                });
+
+            }catch(err){
+                addMessage('{{ _("An unexpected error occured.") }}', 'danger');
+            }
+        })
+        .always(function(){
+            enableForm();
+        });
+    });
+</script>
 {% endblock %}

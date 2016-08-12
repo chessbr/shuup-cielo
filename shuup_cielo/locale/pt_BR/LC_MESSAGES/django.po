@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Shuup Cielo 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-09 18:50+0000\n"
+"POT-Creation-Date: 2016-08-19 01:29+0000\n"
 "PO-Revision-Date: 2016-08-07 23:11-0300\n"
 "Last-Translator: Christian Hess <chess@rockho.com.br>\n"
 "Language-Team: pt_BR <LL@li.org>\n"
@@ -19,646 +19,723 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: admin/__init__.py:18 admin/__init__.py:46
+#: admin/__init__.py:21 admin/__init__.py:49 admin/__init__.py:62 models.py:52
+#: models.py:53
 msgid "Cielo"
 msgstr ""
 
-#: admin/__init__.py:53
+#: admin/__init__.py:56
 msgid "Show Dashboard"
 msgstr "Exibir Dashboard"
 
-#: checkout.py:33
+#: admin/__init__.py:109
+msgid "Configurations"
+msgstr "Configurações"
+
+#: admin/views/config.py:25 models.py:343
+msgid "Shop"
+msgstr "Loja"
+
+#: admin/views/config.py:26 models.py:345
+msgid "Affiliation number"
+msgstr "Número do credenciamento"
+
+#: checkout.py:35
 msgid "Payment information"
 msgstr "Informações do pagamento"
 
-#: constants.py:26
+#: checkout.py:36
+msgid "Edit payment information"
+msgstr "Informações do pagamento"
+
+#: constants.py:29
 #, python-brace-format
 msgid "{0}x of {1} | Total={2})"
 msgstr "{0}x sem juros de {1} (Total={2})"
 
-#: constants.py:27
+#: constants.py:30
 #, python-brace-format
 msgid "{0}x of {1} | Total={2} | Interest rate: {3}%)"
 msgstr "{0}x com juros de {1} (Total={2} | Taxa={3}%a.m.)"
 
-#: constants.py:73
+#: constants.py:77
+msgid "Not created"
+msgstr "Não criado"
+
+#: constants.py:78
 msgid "Created"
 msgstr "Criado"
 
-#: constants.py:74
+#: constants.py:79
 msgid "In progress"
 msgstr "Em progresso"
 
-#: constants.py:75
+#: constants.py:80
 msgid "Authenticated"
 msgstr "Autenticado"
 
-#: constants.py:76
+#: constants.py:81
 msgid "Not authenticated"
 msgstr "Não autenticado"
 
-#: constants.py:77
+#: constants.py:82
 msgid "Authorized"
 msgstr "Autorizado"
 
-#: constants.py:78
+#: constants.py:83
 msgid "Not authorized"
 msgstr "Não autorizado"
 
-#: constants.py:79
+#: constants.py:84
 msgid "Captured"
 msgstr "Capturado"
 
-#: constants.py:80
+#: constants.py:85
 msgid "Cancelled"
 msgstr "Cancelado"
 
-#: constants.py:81
+#: constants.py:86
 msgid "Authenticating"
 msgstr "Autenticando"
 
-#: constants.py:82
+#: constants.py:87
 msgid "Cancelling"
 msgstr "Cancelando"
 
-#: constants.py:86
+#: constants.py:91
 msgid "Mensagem inválida"
 msgstr ""
 
-#: constants.py:87
+#: constants.py:92
 msgid "Credenciais inválidas"
 msgstr ""
 
-#: constants.py:88
+#: constants.py:93
 msgid "Transação inexistente"
 msgstr ""
 
-#: constants.py:89
+#: constants.py:94
 msgid "Código de Segurança Inválido"
 msgstr ""
 
-#: constants.py:90
+#: constants.py:95
 msgid "Inconsistência no envio do cartão"
 msgstr ""
 
-#: constants.py:91
+#: constants.py:96
 msgid "Modalidade não habilitada"
 msgstr ""
 
-#: constants.py:92 constants.py:102
+#: constants.py:97 constants.py:107
 msgid "Número de parcelas inválido"
 msgstr ""
 
-#: constants.py:93
+#: constants.py:98
 msgid "Flag de autorização automática"
 msgstr ""
 
-#: constants.py:94
+#: constants.py:99
 msgid "Autorização Direta inválida"
 msgstr ""
 
-#: constants.py:95
+#: constants.py:100
 msgid "Autorização Direta sem Cartão"
 msgstr ""
 
-#: constants.py:96
+#: constants.py:101
 msgid "Identificador, TID, inválido"
 msgstr ""
 
-#: constants.py:97
+#: constants.py:102
 msgid "Código de segurança ausente"
 msgstr ""
 
-#: constants.py:98
+#: constants.py:103
 msgid "Indicador de código de segurança inconsistente"
 msgstr ""
 
-#: constants.py:99
+#: constants.py:104
 msgid "URL de Retorno não fornecida"
 msgstr ""
 
-#: constants.py:100
+#: constants.py:105
 msgid "Status não permite autorização"
 msgstr ""
 
-#: constants.py:101
+#: constants.py:106
 msgid "Prazo de autorização vencido"
 msgstr ""
 
-#: constants.py:103
+#: constants.py:108
 msgid "Encaminhamento a autorização não permitido"
 msgstr ""
 
-#: constants.py:104
+#: constants.py:109
 msgid "Status inválido para captura"
 msgstr ""
 
-#: constants.py:105
+#: constants.py:110
 msgid "Prazo de captura vencido"
 msgstr ""
 
-#: constants.py:106
+#: constants.py:111
 msgid "Valor de captura inválido"
 msgstr ""
 
-#: constants.py:107
+#: constants.py:112
 msgid "Falha ao capturar"
 msgstr ""
 
-#: constants.py:108
+#: constants.py:113
 msgid "Valor da taxa de embarque obrigatório"
 msgstr ""
 
-#: constants.py:109
+#: constants.py:114
 msgid "Bandeira inválida para utilização da Taxa de Embarque"
 msgstr ""
 
-#: constants.py:110
+#: constants.py:115
 msgid "Produto inválido para utilização da Taxa de Embarque"
 msgstr ""
 
-#: constants.py:111
+#: constants.py:116
 msgid "Prazo de cancelamento vencido"
 msgstr ""
 
-#: constants.py:112
+#: constants.py:117
 msgid "Falha ao cancelar"
 msgstr ""
 
-#: constants.py:113
+#: constants.py:118
 msgid "Valor de cancelamento é maior que valor autorizado."
 msgstr ""
 
-#: constants.py:114
+#: constants.py:119
 msgid "Recorrência Inválida"
 msgstr ""
 
-#: constants.py:115
+#: constants.py:120
 msgid "Token Inválido"
 msgstr ""
 
-#: constants.py:116
+#: constants.py:121
 msgid "Recorrência não habilitada"
 msgstr ""
 
-#: constants.py:117
+#: constants.py:122
 msgid "Transação com Token inválida"
 msgstr ""
 
-#: constants.py:118
+#: constants.py:123
 msgid "Número do cartão não fornecido"
 msgstr ""
 
-#: constants.py:119
+#: constants.py:124
 msgid "Validade do cartão não fornecido"
 msgstr ""
 
-#: constants.py:120
+#: constants.py:125
 msgid "Erro inesperado gerando Token"
 msgstr ""
 
-#: constants.py:121
+#: constants.py:126
 msgid "Transação Recorrente Inválida"
 msgstr ""
 
-#: constants.py:122
+#: constants.py:127
 msgid "XID não fornecido"
 msgstr ""
 
-#: constants.py:123
+#: constants.py:128
 msgid "CAVV não fornecido"
 msgstr ""
 
-#: constants.py:124
+#: constants.py:129
 msgid "XID e CAVV não fornecidos"
 msgstr ""
 
-#: constants.py:125
+#: constants.py:130
 msgid "CAVV com tamanho divergente"
 msgstr ""
 
-#: constants.py:126
+#: constants.py:131
 msgid "XID com tamanho divergente"
 msgstr ""
 
-#: constants.py:127
+#: constants.py:132
 msgid "ECI com tamanho divergente"
 msgstr ""
 
-#: constants.py:128
+#: constants.py:133
 msgid "ECI inválido"
 msgstr ""
 
-#: constants.py:129
+#: constants.py:134
 msgid "Erro interno de autenticação"
 msgstr ""
 
-#: constants.py:130
+#: constants.py:135
 msgid "Sistema indisponível"
 msgstr ""
 
-#: constants.py:131
+#: constants.py:136
 msgid "Timeout"
 msgstr ""
 
-#: constants.py:132
+#: constants.py:137
 msgid "Erro inesperado"
 msgstr ""
 
-#: constants.py:137 constants.py:144
+#: constants.py:142 constants.py:149
+msgid "Autorizado."
+msgstr "Autorizado"
+
+#: constants.py:142 constants.py:149
 msgid "Transação autorizada"
 msgstr ""
 
-#: constants.py:138
-msgid "Transação referida pelo banco emissor"
-msgstr ""
-
-#: constants.py:139 constants.py:140 constants.py:153 constants.py:154
-msgid "Transação False autorizada"
-msgstr ""
-
-#: constants.py:141 constants.py:158
-msgid "Tente novamente"
-msgstr ""
-
-#: constants.py:142 constants.py:149
-msgid "Cartão com restrição"
+#: constants.py:143 constants.py:147 constants.py:154 constants.py:155
+#: constants.py:157 constants.py:158 constants.py:159
+msgid "Contate o emissor do seu cartão."
 msgstr ""
 
 #: constants.py:143
-msgid "Código de segurança inválido"
+msgid "Transação referida pelo banco emissor"
 msgstr ""
 
-#: constants.py:145
-msgid "Valor inválido"
+#: constants.py:144 constants.py:145 constants.py:146
+msgid "Tente novamente."
 msgstr ""
 
-#: constants.py:146
-msgid "Cartão inválido"
+#: constants.py:144 constants.py:145 constants.py:158 constants.py:159
+msgid "Transação não autorizada"
 msgstr ""
 
-#: constants.py:147
-msgid "Banco emissor indisponível"
+#: constants.py:146 constants.py:163
+msgid "Tente novamente"
+msgstr ""
+
+#: constants.py:147 constants.py:154
+msgid "Cartão com restrição"
 msgstr ""
 
 #: constants.py:148
-msgid "Cancelamento False efetuado"
+msgid "Código de segurança inválido."
+msgstr ""
+
+#: constants.py:148
+msgid "Código de segurança inválido"
 msgstr ""
 
 #: constants.py:150
-msgid "Saldo insuficiente"
+msgid "Valor inválido."
+msgstr ""
+
+#: constants.py:150
+msgid "Valor inválido"
 msgstr ""
 
 #: constants.py:151
-msgid "Cartão vencido"
+msgid "Cartão inválido. Informe corretamente os dados e tente novamente."
+msgstr ""
+
+#: constants.py:151
+msgid "Cartão inválido"
+msgstr ""
+
+#: constants.py:152 constants.py:162 constants.py:163 constants.py:164
+#: constants.py:166
+msgid "Aguarde alguns instantes e tente novamente."
 msgstr ""
 
 #: constants.py:152
-msgid "Transação False permitida"
+msgid "Banco emissor indisponível"
+msgstr ""
+
+#: constants.py:153
+msgid "Problema interno. Contate o atendimento da loja."
+msgstr ""
+
+#: constants.py:153
+msgid "Cancelamento não efetuado"
 msgstr ""
 
 #: constants.py:155
-msgid "Cartão False foi desbloqueado pelo portador"
+msgid "Saldo insuficiente"
 msgstr ""
 
 #: constants.py:156
-msgid "Erro no cartão"
+msgid "Cartão vencido."
+msgstr ""
+
+#: constants.py:156
+msgid "Cartão vencido"
 msgstr ""
 
 #: constants.py:157
-msgid "Banco fora do ar"
-msgstr ""
-
-#: constants.py:159
-msgid "Tempo excedido"
+msgid "Transação não permitida"
 msgstr ""
 
 #: constants.py:160
-msgid "Use função débito"
+msgid "Cartão bloqueado."
+msgstr ""
+
+#: constants.py:160
+msgid "Cartão não foi desbloqueado pelo portador"
 msgstr ""
 
 #: constants.py:161
+msgid "Cartão inválido."
+msgstr ""
+
+#: constants.py:161
+msgid "Erro no cartão"
+msgstr ""
+
+#: constants.py:162
+msgid "Banco fora do ar"
+msgstr ""
+
+#: constants.py:164
+msgid "Tempo excedido"
+msgstr ""
+
+#: constants.py:165
+msgid "Cartão somente aceita a função Débito. Altere a forma de pagamento."
+msgstr ""
+
+#: constants.py:165
+msgid "Use função débito"
+msgstr ""
+
+#: constants.py:166
 msgid "Transação referida pela Cielo"
 msgstr ""
 
-#: constants.py:205
+#: constants.py:170 views.py:295
+msgid "Unknown error"
+msgstr "Erro desconhecido"
+
+#: constants.py:256
 msgid "Credit"
 msgstr "Crédito"
 
-#: constants.py:206
+#: constants.py:257
 msgid "Installment credit"
 msgstr "Parcelado loja"
 
-#: constants.py:207
+#: constants.py:258
 msgid "Debit"
 msgstr "Débito"
 
-#: constants.py:212
+#: constants.py:263
 msgid "Simple"
 msgstr "Simples"
 
-#: constants.py:213
+#: constants.py:264
 msgid "PRICE table"
 msgstr "Tabela PRICE"
 
-#: constants.py:218
+#: constants.py:269
 msgid "Only authenticate"
 msgstr "Somente autenticar"
 
-#: constants.py:219
+#: constants.py:270
 msgid "Only if the transaction gets authenticated"
 msgstr "Somente se a transação for autenticada"
 
-#: constants.py:220
+#: constants.py:271
 msgid "If the transaction gets authenticated or not"
 msgstr "Se a transação for autenticada ou não"
 
-#: constants.py:221
+#: constants.py:272
 msgid "Direct, do not authenticate"
 msgstr "Direta, não autenticar"
 
-#: constants.py:222
+#: constants.py:273
 msgid "Recurrent"
 msgstr "Recorrente"
 
-#: forms.py:32 templates/cielo/checkout.jinja:18
+#: forms.py:26 templates/cielo/checkout.jinja:30
 msgid "Brand"
 msgstr "Bandeira"
 
-#: forms.py:37 templates/cielo/admin/order_section_transaction_detail.jinja:42
+#: forms.py:31 templates/cielo/admin/order_section_transaction_detail.jinja:42
 msgid "Holder"
 msgstr "Portador"
 
-#: forms.py:40
+#: forms.py:34
 msgid "As printed on the card"
 msgstr "Como está impresso no cartão"
 
-#: forms.py:42
+#: forms.py:36
 msgid "Card number"
 msgstr "Número do cartão"
 
-#: forms.py:46
+#: forms.py:40
 msgid "Security code"
 msgstr "Código de segurança"
 
-#: forms.py:49
+#: forms.py:43
 msgid "Valid year"
 msgstr "Ano de validade"
 
-#: forms.py:52
+#: forms.py:46
 msgid "Valid month"
 msgstr "Mês de validade"
 
-#: forms.py:55
+#: forms.py:49
 msgid "Number of installments"
 msgstr "Número de parcelas"
 
-#: forms.py:114
+#: forms.py:72
 msgid "Invalid card number"
 msgstr "Número do cartão inválido"
 
-#: forms.py:126
+#: forms.py:84
 msgid "This brand does not accept installments"
 msgstr "Esta bandeira não aceita parcelamento"
 
-#: forms.py:135
+#: forms.py:87
+msgid "Invalid security code."
+msgstr "Código de segurança inválido."
+
+#: forms.py:96
 msgid "Your card is expired"
 msgstr "Seu cartão está vencido"
 
-#: forms.py:138
+#: forms.py:99
 msgid "Invalid expiration date"
 msgstr "Data de validade inválida"
 
 #: models.py:57
-msgid "Cielo's affiliation number"
-msgstr "Número do credenciamento"
-
-#: models.py:58
-msgid "Cielo's affiliation secret key"
-msgstr "Chave secreta"
-
-#: models.py:60
-msgid "Auto capture transactions"
-msgstr "Capturar transações automaticamente"
-
-#: models.py:62
-msgid "Enable this to capture transactions right after they get approved."
-msgstr "Ative para que as transações sejam capturadas logo após serem aprovadas"
-
-#: models.py:65
-msgid "Authorization mode"
-msgstr "Modo de autorização"
-
-#: models.py:68
-msgid "Select the authroization type for credit cards."
-msgstr "Selecione o modo de autorização para cartões de crédito"
-
-#: models.py:70
-msgid "Maximum installments number"
-msgstr "Quantidade máxima de parcelas"
-
-#: models.py:77
-msgid "Installments without interest"
-msgstr "Parcelas sem taxa de juros"
-
-#: models.py:83
-msgid "How many installments will have no interest applied."
-msgstr "Informe quantas parcelas não terão juros aplicado"
-
-#: models.py:86
-msgid "Interest type"
-msgstr "Tipo de juros"
-
-#: models.py:91
-msgid "Interest rate"
-msgstr "Taxa de juros mensal"
-
-#: models.py:97
-msgid "Minimum installment amount"
-msgstr "Valor mínimo da parcela"
-
-#: models.py:103
-msgid "Sandbox mode"
-msgstr "Modo Sandbox"
-
-#: models.py:105
-msgid "Enable this to activate Developer mode (test mode)."
-msgstr "Ative para habilitar o modo Desenvolvedor (testes)"
-
-#: models.py:108 models.py:109
-msgid "Cielo Webservice v1.5"
-msgstr ""
-
-#: models.py:113
 msgid "Credit card"
 msgstr "Cartão de crédito"
 
-#: models.py:114
+#: models.py:58
 msgid "Debit card"
 msgstr "Cartão de débito"
 
-#: models.py:138
-msgid "Payment data is None when it was needed to proccess a Cielo transaction"
-msgstr ""
-
-#: models.py:139
+#: models.py:86 models.py:87
 msgid "No payment identified."
 msgstr "Nenhum pagamento identificado"
 
-#: models.py:139 models.py:164 models.py:279
+#: models.py:87
 msgid "Order cancelled"
 msgstr "Pedido cancelado"
 
-#: models.py:161
-msgid "Installment interest total is different from the order payment method total."
-msgstr "Total do parcelamento é diferente do total do pedido."
-
-#: models.py:163
-msgid "Installment interest total is different from the order payment method total!"
-msgstr "Total do parcelamento é diferente do total do pedido!"
-
-#: models.py:248
-#, python-brace-format
-msgid "Cielo transaction failed: {0}"
-msgstr "Transação falhou: {0}"
-
-#: models.py:252
-msgid "Invalid security code."
-msgstr "Código de segurança inválido."
-
-#: models.py:254
-msgid "Unknown error."
-msgstr "Erro desconhecido."
-
-#: models.py:260
-msgid "Payment failed"
-msgstr "Falha no pagamento"
-
-#: models.py:279
-msgid "Payment not identified."
-msgstr "Pagamento não identificado."
-
-#: models.py:296
-#, python-brace-format
-msgid "Cielo create payment error: {0}"
-msgstr ""
-
-#: models.py:308
+#: models.py:109
 msgid "Order"
 msgstr "Pedido"
 
-#: models.py:310
+#: models.py:113
+msgid "Cielo pre-order transaction"
+msgstr "Transação pré-pedido"
+
+#: models.py:114
+msgid "Cielo pre-order transactions"
+msgstr "Transações pré-pedido"
+
+#: models.py:124
+msgid "shop"
+msgstr "loja"
+
+#: models.py:127
+msgid "Cielo Order"
+msgstr "Pedido Cielo"
+
+#: models.py:128
 msgid "Transaction ID"
 msgstr "ID da transação (TID)"
 
-#: models.py:312
+#: models.py:130
 msgid "Transaction status"
 msgstr "Estado"
 
-#: models.py:315
+#: models.py:133
 msgid "Creation date"
 msgstr "Data de criação"
 
-#: models.py:316
+#: models.py:134
 #: templates/cielo/admin/order_section_transaction_detail.jinja:40
 msgid "Last update"
 msgstr "Última atualização"
 
-#: models.py:318
+#: models.py:136
 msgid "Card holder"
 msgstr "Portador"
 
-#: models.py:319
+#: models.py:137
 #: templates/cielo/admin/order_section_transaction_detail.jinja:43
 msgid "Card brand"
 msgstr "Bandeira"
 
-#: models.py:320
+#: models.py:138
 #: templates/cielo/admin/order_section_transaction_detail.jinja:45
 msgid "Installments"
 msgstr "Parcelas"
 
-#: models.py:321
+#: models.py:139
 #: templates/cielo/admin/order_section_transaction_detail.jinja:44
 msgid "Product"
 msgstr "Produto"
 
-#: models.py:327
+#: models.py:146
 msgid "transaction total"
 msgstr "Total parcelado"
 
-#: models.py:328
+#: models.py:147
 msgid "total captured"
 msgstr "Total capturado"
 
-#: models.py:329
+#: models.py:148
 msgid "total reversed"
 msgstr "Total estornado"
 
-#: models.py:331
-msgid "Authorization LR code"
-msgstr "Código LR autorização"
+#: models.py:149
+msgid "interest amount"
+msgstr "Taxa de juros mensal"
 
-#: models.py:332
+#: models.py:151
+msgid "Authorization LR code"
+msgstr "Código LR da autorização"
+
+#: models.py:152
 #: templates/cielo/admin/order_section_transaction_detail.jinja:52
 msgid "Authorization NSU"
 msgstr "NSU"
 
-#: models.py:333
-#: templates/cielo/admin/order_section_transaction_detail.jinja:55
+#: models.py:153
+#: templates/cielo/admin/order_section_transaction_detail.jinja:56
 msgid "Authorization date"
 msgstr "Data autorização"
 
-#: models.py:335
+#: models.py:155
 msgid "ECI security level"
 msgstr "Nível segurança ECI"
 
-#: models.py:336
-#: templates/cielo/admin/order_section_transaction_detail.jinja:61
+#: models.py:156
+#: templates/cielo/admin/order_section_transaction_detail.jinja:62
 msgid "Authentication date"
 msgstr "Data autenticação"
 
-#: models.py:339
+#: models.py:158
+msgid "International transaction"
+msgstr "Transação internacional"
+
+#: models.py:161
 msgid "Cielo 1.5 transaction"
 msgstr "Transação Cielo v1.5"
 
-#: models.py:340
+#: models.py:162
 msgid "Cielo 1.5 transactions"
 msgstr "Transações Cielo v1.5"
 
-#: models.py:384
+#: models.py:200
 msgid "Fail to update Cielo transation info"
 msgstr "Falha ao atualizar informações da transação"
 
-#: models.py:484
+#: models.py:236
+msgid "Failed to capture transaction {0}"
+msgstr "Falha ao capturar transação {0}"
+
+#: models.py:261
+msgid "Failed to cancel transaction {0}"
+msgstr "falha ao cancelar transação {0}"
+
+#: models.py:346
+msgid "Affiliation secret key"
+msgstr "Chave secreta"
+
+#: models.py:348
+msgid "Auto capture transactions"
+msgstr "Capturar transações automaticamente"
+
+#: models.py:350
+msgid "Enable this to capture transactions right after they get approved."
+msgstr "Ative para que as transações sejam capturadas logo após serem aprovadas"
+
+#: models.py:353
+msgid "Authorization mode"
+msgstr "Modo de autorização"
+
+#: models.py:356
+msgid "Select the authroization type for credit cards."
+msgstr "Selecione o modo de autorização para cartões de crédito"
+
+#: models.py:358
+msgid "Maximum installments number"
+msgstr "Quantidade máxima de parcelas"
+
+#: models.py:365
+msgid "Installments without interest"
+msgstr "Parcelas sem taxa de juros"
+
+#: models.py:371
+msgid "How many installments will have no interest applied."
+msgstr "Informe quantas parcelas não terão juros aplicado"
+
+#: models.py:374
+msgid "Interest type"
+msgstr "Tipo de juros"
+
+#: models.py:379
+msgid "Interest rate"
+msgstr "Taxa de juros mensal"
+
+#: models.py:385
+msgid "Minimum installment amount"
+msgstr "Valor mínimo da parcela"
+
+#: models.py:391
+msgid "Sandbox mode"
+msgstr "Modo Sandbox"
+
+#: models.py:393
+msgid "Enable this to activate Developer mode (test mode)."
+msgstr "Ative para habilitar o modo Desenvolvedor (testes)"
+
+#: models.py:396
+msgid "cielo configuration"
+msgstr "Configuração Cielo"
+
+#: models.py:397
+msgid "cielo configurations"
+msgstr "Configurações Cielo"
+
+#: models.py:400
+msgid "Cielo configuration for {0}"
+msgstr "Configuração Cielo para {0}"
+
+#: models.py:404
 msgid "Cielo installment interest"
 msgstr "Taxa de parcelamento Cielo"
 
-#: models.py:485
+#: models.py:405
 msgid "Captures and returns the total interest amount of an installment"
 msgstr "Captura e retorna o total de juros de um parcelamento"
 
-#: models.py:496
+#: models.py:414
 #, python-brace-format
 msgid "installment interest for {0}x"
 msgstr "taxa de juros para {0}x"
 
-#: models.py:502 models.py:505
+#: models.py:420 models.py:423
 msgid "Discount percentage"
 msgstr "Percentual de desconto"
 
-#: models.py:506
+#: models.py:424
 msgid "Applies a discount percentage over the basket's products"
 msgstr "Aplica um percentual de desconto sobre os produtos do carrinho"
 
-#: models.py:510
+#: models.py:428
 #, python-brace-format
 msgid "products discount {0:.2f}%"
 msgstr "desconto nos produtos de {0:.2f}%"
 
 #: templates/cielo/admin/dashboard.jinja:4
 msgid "This version contains no information about transactions yet. Improvements are currently being developed.."
-msgstr ""
+msgstr "Esta versão não contém nenhuma informação de transações ainda. Melhorias serão desenvolvidas em breve."
 
 #: templates/cielo/admin/dashboard.jinja:6
 msgid "Version:"
@@ -672,11 +749,19 @@ msgstr "Transações"
 msgid "There was an error refreshing the transaction."
 msgstr "Houve um arro ao atualizar a transação."
 
-#: templates/cielo/admin/order_section_extra_js.jinja:32
+#: templates/cielo/admin/order_section_extra_js.jinja:20
+msgid "Are you sure do you want to CAPTURE this transaction?"
+msgstr "Tem certeza que deseja CAPTURAR esta transação?"
+
+#: templates/cielo/admin/order_section_extra_js.jinja:33
 msgid "There was an error capturing the transaction."
 msgstr "Houve um erro ao capturar a transação."
 
-#: templates/cielo/admin/order_section_extra_js.jinja:50
+#: templates/cielo/admin/order_section_extra_js.jinja:40
+msgid "Are you sure do you want to CANCEL this transaction?"
+msgstr "Tem certeza que deseja CANCELAR esta transação?"
+
+#: templates/cielo/admin/order_section_extra_js.jinja:53
 msgid "There was an error canceling the transaction."
 msgstr "Houve um erro ao estornar a transação."
 
@@ -712,19 +797,23 @@ msgstr "Total estornado"
 msgid "Authorization LR"
 msgstr "Código autorização LR"
 
-#: templates/cielo/admin/order_section_transaction_detail.jinja:58
+#: templates/cielo/admin/order_section_transaction_detail.jinja:53
+msgid "International?"
+msgstr "Internacional?"
+
+#: templates/cielo/admin/order_section_transaction_detail.jinja:59
 msgid "Authentication ECI"
 msgstr "ECI autenticação"
 
-#: templates/cielo/admin/order_section_transaction_detail.jinja:65
+#: templates/cielo/admin/order_section_transaction_detail.jinja:66
 msgid "Refresh"
 msgstr "Atualizar"
 
-#: templates/cielo/admin/order_section_transaction_detail.jinja:70
+#: templates/cielo/admin/order_section_transaction_detail.jinja:71
 msgid "Capture"
 msgstr "Capturar"
 
-#: templates/cielo/admin/order_section_transaction_detail.jinja:75
+#: templates/cielo/admin/order_section_transaction_detail.jinja:76
 msgid "Cancel"
 msgstr "Estornar"
 
@@ -748,3 +837,51 @@ msgstr "Se isso demorar mais do que 10 segundos, <a href=\"%(url)s\">clique aqui
 #: templates/cielo/checkout.jinja:12
 msgid "Credit card information"
 msgstr "Dados do cartão"
+
+#: templates/cielo/checkout.jinja:22
+msgid "Warning: transaction already authorized!"
+msgstr "Alerta: transação já autorizada!"
+
+#: templates/cielo/checkout.jinja:22
+msgid "A valid and authorized transaction already exists. To cancel the current transaction and change the payment information, just fill and submit this form again."
+msgstr "Uma transação válida e autorizada já existe. Para cancelar transações anteriores e alterar os dados do pagamento, preencha e envie novamente este formulário com os novos dados. Caso você não queira alterar informação alguma, pule este passo."
+
+#: templates/cielo/checkout.jinja:63
+msgid "Skip"
+msgstr "Pular"
+
+#: templates/cielo/checkout.jinja:67
+msgid "Continue"
+msgstr "Continuar"
+
+#: templates/cielo/checkout.jinja:89
+msgid "Failed to retrieve installments"
+msgstr "Falha ao obter parcelamento"
+
+#: templates/cielo/checkout.jinja:123
+msgid "Please, wait.."
+msgstr "Por favor, aguarde.."
+
+#: templates/cielo/checkout.jinja:159
+msgid "An unexpected error occured."
+msgstr "Um erro inesperado ocorreu."
+
+#: views.py:135
+msgid "Failed to cancel old Cielo transaction"
+msgstr "Falha ao cancelar transação antiga"
+
+#: views.py:244
+msgid "Cielo transaction error."
+msgstr "Erro na transação Cielo"
+
+#: views.py:278
+msgid "Payment not identified. Old transactions were also cancelled."
+msgstr "Pagamento não identificado. Transações antigas foram canceladas."
+
+#: views.py:294
+msgid "Transaction not authorized: {0}"
+msgstr "Pagamento não autorizado: {0}"
+
+#: views.py:303
+msgid "Transaction authorized."
+msgstr "Pagamento autorizado."

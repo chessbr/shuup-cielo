@@ -12,175 +12,104 @@ from decimal import Decimal
 import logging
 
 from shuup_cielo.constants import (
-    CIELO_CREDIT_CARD_INFO_KEY, CIELO_DEBIT_CARD_INFO_KEY, CIELO_INSTALLMENT_INFO_KEY,
-    CIELO_SERVICE_CREDIT
+    CIELO_AUTHORIZED_STATUSES, CIELO_DECIMAL_PRECISION, CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT,
+    CIELO_UKNOWN_ERROR_MSG, CieloAuthorizationCode, CieloProduct
 )
 from shuup_cielo.forms import CieloPaymentForm
-from shuup_cielo.models import CieloWS15PaymentProcessor, InstallmentContext
+from shuup_cielo.models import CieloPaymentProcessor
+from shuup_cielo.objects import CIELO_ORDER_TRANSACTION_ID_KEY, CIELO_TRANSACTION_ID_KEY
 
 from shuup.front.checkout import BasicServiceCheckoutPhaseProvider, CheckoutPhaseViewMixin
 
-from django.core import signing
+from django.contrib import messages
+from django.utils.translation import ugettext as _p
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic.edit import FormView
+from django.views.generic.base import TemplateView
 
 logger = logging.getLogger(__name__)
 
 
-class CieloCheckoutPhase(CheckoutPhaseViewMixin, FormView):
+class CieloCheckoutPhase(CheckoutPhaseViewMixin, TemplateView):
     template_name = 'cielo/checkout.jinja'
     identifier = 'cielo'
-    title = _('Payment information')
-    form_class = CieloPaymentForm
+    _title_pending = _('Payment information')
+    _title_paid = _('Edit payment information')
 
-    def get_initial(self):
-        initial = self.initial.copy()
+    @property
+    def title(self):
+        if self._has_valid_transaction():
+            return self._title_paid
+        else:
+            return self._title_pending
 
-        if self.storage.get(CIELO_CREDIT_CARD_INFO_KEY):
-            cc_info = signing.loads(self.storage[CIELO_CREDIT_CARD_INFO_KEY])
-
-            initial.update({
-                'installments': cc_info['installments'],
-                'cc_brand': '',
-                'cc_holder': '',
-                'cc_number': '',
-                'cc_security_code': '',
-                'cc_valid_year': '',
-                'cc_valid_month': '',
-            })
-
-        elif self.storage.get(CIELO_DEBIT_CARD_INFO_KEY):
-            cc_info = signing.loads(self.storage[CIELO_DEBIT_CARD_INFO_KEY])
-
-            initial.update({
-                'cc_brand': '',
-                'cc_holder': '',
-                'cc_number': '',
-                'cc_security_code': '',
-                'cc_valid_year': '',
-                'cc_valid_month': '',
-            })
-
-        return initial
-
-    def get_form_kwargs(self):
-        kwargs = super(CieloCheckoutPhase, self).get_form_kwargs()
+    def get_context_data(self, **kwargs):
+        context = super(CieloCheckoutPhase, self).get_context_data(**kwargs)
+        form_kwargs = {}
 
         if self.request.basket.payment_method_id:
-            payment_method = self.request.basket.payment_method
+            form_kwargs['service'] = self.request.basket.payment_method.choice_identifier
 
-            # IMPORTANT: !!!
-            # Calcula o total do custo do método de pagamento para ser descontado do total do parcelamento
-            # O total desta forma de pagamento será o valor adicional do juros do parcelamento,
-            # sendo assim este valor deve ser desconsiderado na hora de calular as parcelas
-            payment_method_price = sum(
-                [line.price.value for line in self.request.basket._compute_payment_method_lines()]
-            )
-
-            # para fazer o calculo das parcelas, precisamos montar o contexto
-            # contendo o valor total do carrinho e também as constraints
-            # vamos ter pacelas se for o serviço de cartão de crédito e for o processador da Cielo
-            if payment_method.choice_identifier == CIELO_SERVICE_CREDIT:
-                context = InstallmentContext(
-                    (self.request.basket.taxful_total_price.value - payment_method_price),
-                    payment_method.payment_processor
-                )
-
-                kwargs['installment_context'] = context
-
-            kwargs['service'] = payment_method.choice_identifier
-
-        kwargs['currency'] = self.request.basket.currency
-        return kwargs
+        context['has_valid_transaction'] = self._has_valid_transaction()
+        context['next_phase'] = self.next_phase
+        context['form'] = CieloPaymentForm(**form_kwargs)
+        return context
 
     def is_valid(self):
+        if self._has_valid_transaction():
+            cielo_transaction = self.request.cielo.transaction
 
-        # verifica se o serviço é credito ou débito
-        if self.request.basket.payment_method.choice_identifier == CIELO_SERVICE_CREDIT:
-            # temos uma informação de parcelamento.. vamos conferir se o valor
-            # do parcelado bate com o valor do pedido..
-            # se não bater, invalidamos as informações do cartão do cartão e parcelamento
-            if self.storage.get(CIELO_INSTALLMENT_INFO_KEY):
-                payment_method_price = sum([line.price.value for line in self.request.basket._compute_payment_method_lines()])
+            if cielo_transaction.refresh() and \
+                    cielo_transaction.authorization_lr in CIELO_AUTHORIZED_STATUSES:
+                return True
 
-                # houve acréscimo da forma de pagamento - juros no parcelamento
-                if payment_method_price:
-                    basket_total = self.request.basket.taxful_total_price.value
-                    installments_total = Decimal(self.storage['cielows15_installment']['installments_total'])
+            else:
+                error = _p("Transaction not authorized: {0}").format(
+                    CieloAuthorizationCode.get(
+                        cielo_transaction.authorization_lr, {}
+                    ).get('msg', CIELO_UKNOWN_ERROR_MSG)
+                )
+                messages.error(self.request, error)
 
-                    # Ops, a diferença entre o total das parcelas e do valor do carrinho ultrapassa 1 centavo
-                    # vamos invalidar tudo...
-                    if abs(installments_total - basket_total) > 0.01:
-                        self.storage[CIELO_CREDIT_CARD_INFO_KEY] = None
-                        self.storage[CIELO_INSTALLMENT_INFO_KEY] = None
+        self.request.cielo.rollback()
+        self.request.cielo.clear()
 
-            return not self.storage.get(CIELO_CREDIT_CARD_INFO_KEY) is None
+        return False
 
-        else:
-            # cartão de débito
-            return not self.storage.get(CIELO_DEBIT_CARD_INFO_KEY) is None
+    def _has_valid_transaction(self):
+        """
+        This must return True if a valid transaction is in the user session
+        """
+        cielo_order = self.request.cielo.order_transaction
+        cielo_transaction = self.request.cielo.transaction
 
-    def form_invalid(self, form):
-        # limpa os dados do form - de acordo com a PCI
-        data = form.data.copy()
-        data['cc_number'] = ''
-        data['cc_security_code'] = ''
-        data['cc_valid_year'] = ''
-        data['cc_valid_month'] = ''
-        form.data = data
-        return super(CieloCheckoutPhase, self).form_invalid(form)
+        # the instances should be valid
+        if cielo_order and cielo_transaction:
+            service = self.request.basket.payment_method.choice_identifier
+            is_credit = (cielo_transaction.cc_product in (CieloProduct.Credit, CieloProduct.InstallmentCredit))
+            is_debit = (cielo_transaction.cc_product == CieloProduct.Debit)
 
-    def form_valid(self, form):
-        # nunca deixa os dados do formulário salvo
-        clean_form = self.get_form_class()()
+            # the service must match the cc product
+            if (service == CIELO_SERVICE_CREDIT and is_credit) or (service == CIELO_SERVICE_DEBIT and is_debit):
+                order_total = self.request.basket.taxful_total_price.value
 
-        # salva temporariamente os dados do cartão e o valor total do pedido na sessão
-        # FIXME: ver uma melhor maneira de armazenar temporariamente estes dados aqui
-        # pois pode ser um problema de segurança se a SECRET_KEY vazar
-        # (não só isso mas todo o sistema estará comprometido)
-        # e é por isso que no deploy a SECRET_KEY deveria ser lida de um arquivo
-        # na qual apenas o usuário do servidor http tenha acesso (leitura e escrita)
-        cc_info = signing.dumps(form.cleaned_data)
+                # All clear: valor da transação igual ao total do carrinho!
+                if abs((cielo_transaction.total_value - order_total).quantize(CIELO_DECIMAL_PRECISION)) <= Decimal(0):
+                    return True
 
-        # verifica se o serviço é credito ou débito
-        if self.request.basket.payment_method.choice_identifier == CIELO_SERVICE_CREDIT:
-
-            # Obtém a forma de parcelamento escolhida e salva ela no storage
-            # Essa informação ficará salva nas informações extra do pedido em `payment_data`
-            # Os dados serão utilizados especialmente para adicionar uma OrderLine
-            # no pedido para que seja somada no total
-            # Pode ser que o `installment_context` seja nulo
-            selected_installment = None
-
-            if form.installment_context:
-                for installment_choice in form.installment_context.get_intallments_choices():
-                    if installment_choice[0] == int(form.cleaned_data['installments']):
-                        selected_installment = {
-                            "installment": installment_choice[0],
-                            "installment_amount": installment_choice[1],
-                            "installments_total": installment_choice[2],
-                            "interest_total": installment_choice[3],
-                        }
-                        break
-
-            self.storage[CIELO_CREDIT_CARD_INFO_KEY] = cc_info
-            self.storage[CIELO_INSTALLMENT_INFO_KEY] = selected_installment
-        else:
-            self.storage[CIELO_DEBIT_CARD_INFO_KEY] = cc_info
-
-        return super(CieloCheckoutPhase, self).form_valid(clean_form)
+        return False
 
     def process(self):
-        # transfere os dados do storage para o basket
-        self.request.basket.payment_data.update({CIELO_CREDIT_CARD_INFO_KEY: self.storage.get(CIELO_CREDIT_CARD_INFO_KEY),
-                                                 CIELO_DEBIT_CARD_INFO_KEY: self.storage.get(CIELO_DEBIT_CARD_INFO_KEY),
-                                                 CIELO_INSTALLMENT_INFO_KEY: self.storage.get(CIELO_INSTALLMENT_INFO_KEY)})
+        cielo_order = self.request.cielo.order_transaction
+        cielo_transaction = self.request.cielo.transaction
+
+        self.request.basket.payment_data[CIELO_TRANSACTION_ID_KEY] = cielo_transaction.pk
+        self.request.basket.payment_data[CIELO_ORDER_TRANSACTION_ID_KEY] = cielo_order.pk
         self.request.basket.save()
 
 
 class CieloCheckoutPhaseProvider(BasicServiceCheckoutPhaseProvider):
     '''
-    Atribui a fase CieloCheckoutPhase à forma de pagamento CieloWS15PaymentProcessor
+    Atribui a fase CieloCheckoutPhase à forma de pagamento CieloPaymentProcessor
     '''
     phase_class = CieloCheckoutPhase
-    service_provider_class = CieloWS15PaymentProcessor
+    service_provider_class = CieloPaymentProcessor

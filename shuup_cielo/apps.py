@@ -16,7 +16,7 @@ class ShuupCieloAppConfig(AppConfig):
     verbose_name = "Shuup Cielo"
     provides = {
         "service_provider_admin_form": [
-            "shuup_cielo.admin.forms:CieloWS15PaymentProcessorForm"
+            "shuup_cielo.admin.forms:CieloPaymentProcessorForm"
         ],
         "service_behavior_component_form": [
             "shuup_cielo.admin.forms:DiscountPercentageBehaviorComponentForm"
@@ -32,5 +32,6 @@ class ShuupCieloAppConfig(AppConfig):
         ],
         "admin_module": [
             "shuup_cielo.admin:CieloModule",
+            "shuup_cielo.admin:CieloConfigModule"
         ]
     }
