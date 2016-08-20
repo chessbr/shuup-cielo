@@ -40,5 +40,6 @@ class CieloTransactionMiddleware(object):
         request.cielo.set_request(request)
 
     def process_response(self, request, response):
-        request.cielo.commit()
+        if hasattr(request, 'cielo'):
+            request.cielo.commit()
         return response
