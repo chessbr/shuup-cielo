@@ -2,8 +2,8 @@
 
 <hr>
 
-{% set CieloTransactionStatus=cielows15.CieloTransactionStatus %}
-{% for transaction in cielows15.transactions %}
+{% set CieloTransactionStatus=cielo.CieloTransactionStatus %}
+{% for transaction in cielo.transactions %}
     <dl class="dl-horizontal">
         <div id="transaction-{{ transaction.pk }}">
             {% include "cielo/admin/order_section_transaction_detail.jinja" with context %}

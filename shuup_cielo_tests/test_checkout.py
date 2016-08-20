@@ -8,8 +8,8 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
-import base64
 from decimal import Decimal
+import json
 import uuid
 
 import iso8601
@@ -17,17 +17,21 @@ from mock import patch
 import pytest
 
 from shuup_cielo.constants import (
-    CIELO_CREDIT_CARD_INFO_KEY, CIELO_DEBIT_CARD_INFO_KEY, CIELO_INSTALLMENT_INFO_KEY,
-    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CIELO_TID_INFO_KEY, CieloAuthorizationType,
-    CieloCardBrand, CieloErrorMap, CieloProduct, CieloTransactionStatus, InterestType
+    CIELO_SERVICE_CREDIT, CieloCardBrand, CieloProduct, CieloTransactionStatus
 )
-from shuup_cielo.models import CieloWS15PaymentProcessor, CieloWS15Transaction
+from shuup_cielo.models import (
+    CieloConfig, CieloOrderTransaction, CieloPaymentProcessor, CieloTransaction, InstallmentContext
+)
+from shuup_cielo.objects import CIELO_ORDER_TRANSACTION_ID_KEY, CIELO_TRANSACTION_ID_KEY
 from shuup_cielo.utils import decimal_to_int_cents
+from shuup_cielo_tests import (
+    AUTH_URL, CC_VISA_1X_INFO, CC_VISA_4X_INFO, get_approved_transaction, get_captured_transaction,
+    get_in_progress_transaction, PRODUCT_PRICE
+)
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
 
 from shuup.core.defaults.order_statuses import create_default_order_statuses
-from shuup.core.models._order_lines import OrderLineType
 from shuup.core.models._orders import Order, OrderStatus, PaymentStatus
 from shuup.core.models._product_shops import ShopProduct
 from shuup.testing.factories import (
@@ -38,43 +42,20 @@ from shuup.testing.mock_population import populate_if_required
 from shuup.testing.soup_utils import extract_form_fields
 from shuup.xtheme._theme import set_current_theme
 
-from cielo_webservice.exceptions import CieloRequestError
-from cielo_webservice.models import (
-    dict_to_autenticacao, dict_to_autorizacao, dict_to_captura, dict_to_pagamento, dict_to_pedido,
-    Transacao
-)
+from django.core.urlresolvers import reverse
+
 from cielo_webservice.request import CieloRequest
 
-from django.core import signing
-from django.core.urlresolvers import reverse
-from django.utils.encoding import escape_uri_path
-from django.utils.timezone import now
-
-PRODUCT_PRICE = Decimal(15.0)
 
 def get_payment_provider(**kwargs):
-    provider = _get_service_provider(CieloWS15PaymentProcessor)
-    provider.ec_num=''
-    provider.ec_key=''
-    provider.auto_capture=False
-    provider.authorization_mode=CieloAuthorizationType.IfAuthenticatedOrNot
-    provider.max_installments=4
-    provider.installments_without_interest=3
-    provider.interest_type=InterestType.Simple
-    provider.interest_rate=2
-    provider.min_installment_amount=5
-    provider.sandbox=True
+    return _get_service_provider(CieloPaymentProcessor)
 
-    # override attributes
-    for k,v in kwargs.items():
-        if hasattr(provider, k):
-            setattr(provider, k, v)
-
-    provider.save()
-    return provider
+def get_cielo_config(**kwargs):
+    return CieloConfig.objects.get_or_create(shop=get_default_shop(), **kwargs)[0]
 
 def initialize():
     get_default_shop()
+    get_cielo_config()
     set_current_theme('shuup.themes.classic_gray')
     create_default_order_statuses()
     populate_if_required()
@@ -98,6 +79,7 @@ def test_order_flow_with_payment_phase_credit_card_success():
 
     c = SmartClient()
     default_product = get_default_product()
+    ORDER_TOTAL = PRODUCT_PRICE * 1
 
     basket_path = reverse("shuup:basket")
     add_to_basket_resp = c.post(basket_path, data={
@@ -112,7 +94,7 @@ def test_order_flow_with_payment_phase_credit_card_success():
     # Create methods
     shipping_method = get_default_shipping_method()
     processor = get_payment_provider()
-    assert isinstance(processor, CieloWS15PaymentProcessor)
+    assert isinstance(processor, CieloPaymentProcessor)
 
     payment_method = processor.create_service(
         CIELO_SERVICE_CREDIT,
@@ -127,6 +109,7 @@ def test_order_flow_with_payment_phase_credit_card_success():
     methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
     payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
     confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
 
 
     # Phase: Addresses
@@ -152,113 +135,76 @@ def test_order_flow_with_payment_phase_credit_card_success():
     assert response.status_code == 302, "Confirm should first redirect forth"
     assert response.url.endswith(payment_path)
 
-    # Phase: Cielo
-    response = c.soup(payment_path)
-    response = c.post(payment_path, data={"cc_number": '4012001038443335',
-                                          "cc_brand": CieloCardBrand.Visa,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '1'})
-
-    assert response.status_code == 302, "Valid payment form should redirect forth"
-    assert response.url.endswith(confirm_path)
-
-    # Phase: Confirm
-    assert Order.objects.count() == 0
-    confirm_soup = c.soup(confirm_path)
-    response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    assert response.status_code == 302, "Confirm should redirect forth"
-
-    assert Order.objects.count() == 1
-    order = Order.objects.filter(payment_method=payment_method).first()
-    assert order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY)
-    assert order.payment_status == PaymentStatus.NOT_PAID
-
-    AUTH_URL = 'http://CUSTUM_URL'
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-    process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
-    order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
-    checkout_auth_redirect_path = "{0}?auth_url={1}".format(reverse("shuup:checkout_auth_redirect"),
-                                                            escape_uri_path(base64.b64encode(AUTH_URL.encode()).decode()))
-
-    # Check confirm redirection to payment page
-    assert response.url.endswith(process_payment_path), ("Confirm should have redirected to payment page")
-
     tid = uuid.uuid4().hex
 
-    transacao = Transacao(
-        pedido=dict_to_pedido({'numero':str(order.pk),
-                               'valor': decimal_to_int_cents(order.taxful_total_price_value),
-                               'moeda':941,
-                               'data-hora':'2016-01-01T01:00Z'}),
-        pagamento=dict_to_pagamento({'bandeira':CieloCardBrand.Visa,
-                                     'produto':CieloProduct.Credit,
-                                     'parcelas':1}),
-        token=None,
-        captura=None,
-        cancelamento=None,
-        tid=tid,
-        pan=None,
-        status=CieloTransactionStatus.InProgress.value,
-        url_autenticacao=AUTH_URL,
-    )
-
-    with patch.object(CieloRequest, 'autorizar', return_value=transacao):
-        # Visit payment page
-        response = c.get(process_payment_path)
-        assert response.status_code == 302, "Payment page should redirect forth"
-        assert response.url.endswith(checkout_auth_redirect_path)
-
-        order.refresh_from_db()
-        assert order.payment_data.get(CIELO_TID_INFO_KEY) == tid
-
-        cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
-        assert cielo_transaction.cc_brand == CieloCardBrand.Visa
-        assert cielo_transaction.cc_holder == 'Joao de souza'
-        assert cielo_transaction.installments == 1
-        assert cielo_transaction.cc_product == CieloProduct.Credit
-        assert abs(cielo_transaction.total.value - order.taxful_total_price_value) < 0.01
-        assert cielo_transaction.status.value == transacao.status
-
-    transacao.status = CieloTransactionStatus.Authorized.value
-    transacao.autenticacao = dict_to_autenticacao({'codigo':'13123',
-                                                 'mensagem':'autorizado',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'eci':2})
-
-    transacao.autorizacao = dict_to_autorizacao({'codigo':'31321',
-                                               'mensagem':'autenticar',
-                                               'data-hora':'2016-01-01T01:00Z',
-                                               'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                               'lr':0,
-                                               'nsu':'123'
-                                               })
+    transacao = get_in_progress_transaction(numero=1,
+                                            valor=decimal_to_int_cents(ORDER_TOTAL),
+                                            produto=CieloProduct.Credit,
+                                            bandeira=CieloCardBrand.Visa,
+                                            parcelas=CC_VISA_1X_INFO['installments'],
+                                            tid=tid)
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
-            # Check payment return
-            response = c.get(process_payment_return_path)
-            assert response.status_code == 302, "Payment return should redirect forth"
-            assert response.url.endswith(order_complete_path)
+            # Phase: Payment
+            response = c.soup(payment_path)
+            response = c.post(transaction_path, CC_VISA_1X_INFO)
 
-            cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
-            assert cielo_transaction.authorization_nsu == str(transacao.autorizacao.nsu)
-            assert cielo_transaction.authorization_lr == str(transacao.autorizacao.lr)
-            assert cielo_transaction.authorization_date == iso8601.parse_date(transacao.autorizacao.data_hora)
+            assert response.status_code == 200
+            json_content = json.loads(response.content.decode("utf-8"))
+            assert json_content['redirect_url'] == AUTH_URL
 
-            assert cielo_transaction.authentication_eci == transacao.autenticacao.eci
-            assert cielo_transaction.authentication_date == iso8601.parse_date(transacao.autenticacao.data_hora)
+            cielo_transaction = CieloTransaction.objects.get(tid=tid)
+            assert cielo_transaction.status == CieloTransactionStatus.InProgress
+            assert cielo_transaction.cc_brand == CC_VISA_1X_INFO['cc_brand']
+            assert cielo_transaction.cc_holder == CC_VISA_1X_INFO['cc_holder']
+            assert cielo_transaction.installments == CC_VISA_1X_INFO['installments']
+            assert cielo_transaction.cc_product == CieloProduct.Credit
+            assert abs(cielo_transaction.total_value - ORDER_TOTAL) < 0.01
+            assert cielo_transaction.status.value == transacao.status
 
-            assert cielo_transaction.total_captured.value == Decimal()
-            assert cielo_transaction.total_reversed.value == Decimal()
+    transacao = get_approved_transaction(transacao)
+
+    with patch.object(CieloRequest, 'consultar', return_value=transacao):
+        # Phase: Confirm Order
+        assert Order.objects.count() == 0
+        confirm_soup = c.soup(confirm_path)
+        response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
+        assert response.status_code == 302, "Confirm should redirect forth"
+        assert Order.objects.count() == 1
+
+        order = Order.objects.filter(payment_method=payment_method).first()
+        process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
+        process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
+        order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
+
+        # Visit payment page
+        response = c.get(process_payment_path)
+        assert response.status_code == 302, "Payment page should redirect forth"
+        assert response.url.endswith(process_payment_return_path)
+
+        # Check payment return
+        response = c.get(process_payment_return_path)
+        assert response.status_code == 302, "Payment return should redirect forth"
+        assert response.url.endswith(order_complete_path)
+
+        cielo_transaction = CieloTransaction.objects.get(order_transaction__order=order, tid=tid)
+        assert cielo_transaction.status == CieloTransactionStatus.Authorized
+        assert cielo_transaction.authorization_nsu == str(transacao.autorizacao.nsu)
+        assert cielo_transaction.authorization_lr == str(transacao.autorizacao.lr)
+        assert cielo_transaction.authorization_date == iso8601.parse_date(transacao.autorizacao.data_hora)
+
+        assert cielo_transaction.authentication_eci == transacao.autenticacao.eci
+        assert cielo_transaction.authentication_date == iso8601.parse_date(transacao.autenticacao.data_hora)
+
+        assert cielo_transaction.total_captured.value == Decimal()
+        assert cielo_transaction.total_reversed.value == Decimal()
 
     order.refresh_from_db()
-    assert order.payment_status == PaymentStatus.FULLY_PAID
-    assert order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY) is None  # removed key
+    assert order.payment_data.get(CIELO_TRANSACTION_ID_KEY)
+    assert order.payment_data.get(CIELO_ORDER_TRANSACTION_ID_KEY)
+    assert order.payment_status == PaymentStatus.NOT_PAID
+
 
 
 @pytest.mark.django_db
@@ -284,11 +230,17 @@ def test_credit_card_success_2():
     })
     assert add_to_basket_resp.status_code < 400
 
+    ORDER_TOTAL = PRODUCT_PRICE * 10
 
     # Create methods
     shipping_method = get_default_shipping_method()
     processor = get_payment_provider()
-    assert isinstance(processor, CieloWS15PaymentProcessor)
+    assert isinstance(processor, CieloPaymentProcessor)
+
+    # aumenta o limite máximo de parcelas para 4
+    cielo_config = get_cielo_config()
+    cielo_config.max_installments = 4
+    cielo_config.save()
 
     payment_method = processor.create_service(
         CIELO_SERVICE_CREDIT,
@@ -302,6 +254,7 @@ def test_credit_card_success_2():
     addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
     methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
     payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
     confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
 
 
@@ -328,91 +281,65 @@ def test_credit_card_success_2():
     assert response.status_code == 302, "Confirm should first redirect forth"
     assert response.url.endswith(payment_path)
 
-    # Phase: Cielo
-    response = c.soup(payment_path)
-    response = c.post(payment_path, data={"cc_number": '4012001038443335',
-                                          "cc_brand": CieloCardBrand.Visa,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '4'})
-
-    assert response.status_code == 302, "Valid payment form should redirect forth"
-    assert response.url.endswith(confirm_path)
-
-    # Phase: Confirm
-    assert Order.objects.count() == 0
-    confirm_soup = c.soup(confirm_path)
-    response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    assert response.status_code == 302, "Confirm should redirect forth"
-
-    assert Order.objects.count() == 1
-    order = Order.objects.filter(payment_method=payment_method).first()
-    assert order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY)
-    assert order.payment_status == PaymentStatus.NOT_PAID
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-    process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
-    order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
-
-    # Check confirm redirection to payment page
-    assert response.url.endswith(process_payment_path), ("Confirm should have redirected to payment page")
-
     tid = uuid.uuid4().hex
-
-    transacao = Transacao(
-        pedido=dict_to_pedido({'numero':str(order.pk),
-                               'valor': decimal_to_int_cents(order.taxful_total_price_value),
-                               'moeda':941,
-                               'data-hora':'2016-01-01T01:00Z'}),
-        pagamento=dict_to_pagamento({'bandeira':CieloCardBrand.Visa,
-                                     'produto':CieloProduct.Credit,
-                                     'parcelas':1}),
-        token=None,
-        captura=None,
-        cancelamento=None,
-        tid=tid,
-        pan=None,
-        status=CieloTransactionStatus.Authorized.value,
-    )
-
-    transacao.autenticacao = dict_to_autenticacao({'codigo':'13123',
-                                                   'mensagem':'autorizado',
-                                                   'data-hora':'2016-01-01T01:00Z',
-                                                   'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                   'eci':2})
-
-    transacao.autorizacao = dict_to_autorizacao({'codigo':'31321',
-                                                 'mensagem':'autenticar',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'lr':0,
-                                                 'nsu':'123'})
+    transacao = get_in_progress_transaction(numero=1,
+                                            valor=decimal_to_int_cents(ORDER_TOTAL),
+                                            produto=CieloProduct.Credit,
+                                            bandeira=CieloCardBrand.Visa,
+                                            parcelas=CC_VISA_1X_INFO['installments'],
+                                            tid=tid,
+                                            return_url=None)
+    transacao = get_approved_transaction(transacao)
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
+            # Phase: pay
+            response = c.soup(payment_path)
+            response = c.post(transaction_path, CC_VISA_4X_INFO)
+
+            assert response.status_code == 200
+            json_content = json.loads(response.content.decode("utf-8"))
+            assert json_content['redirect_url'].endswith(reverse("shuup:cielo_transaction_return",
+                                                                 kwargs={"cielo_order_pk": 1}))
+
+            cielo_transaction = CieloTransaction.objects.get(tid=tid)
+            "{0}".format(cielo_transaction) # just to test __str__
+            assert cielo_transaction.cc_brand == CC_VISA_4X_INFO['cc_brand']
+            assert cielo_transaction.cc_holder == CC_VISA_4X_INFO['cc_holder']
+            assert cielo_transaction.installments == CC_VISA_4X_INFO['installments']
+            assert cielo_transaction.cc_product == CieloProduct.InstallmentCredit
+            assert abs(cielo_transaction.total_value - ORDER_TOTAL) < 0.01
+            assert cielo_transaction.status.value == transacao.status
+
+            response = c.post(json_content['redirect_url'])
+            assert response.status_code == 302
+            assert response.url.endswith(confirm_path)
+
+            # Phase: Confirm
+            assert Order.objects.count() == 0
+            confirm_soup = c.soup(confirm_path)
+            response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
+            assert response.status_code == 302, "Confirm should redirect forth"
+
+            order = Order.objects.filter(payment_method=payment_method).first()
+            process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
+            process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
+            order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
+
             response = c.get(process_payment_path)
             assert response.status_code == 302, "Payment page should redirect forth"
             assert response.url.endswith(process_payment_return_path)
-
-            order.refresh_from_db()
-            assert order.payment_data.get(CIELO_TID_INFO_KEY) == tid
-
-            cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
-            assert cielo_transaction.cc_brand == CieloCardBrand.Visa
-            assert cielo_transaction.cc_holder == 'Joao de souza'
-            assert cielo_transaction.installments == 4
-            assert cielo_transaction.cc_product == CieloProduct.InstallmentCredit
-            assert abs(cielo_transaction.total.value - order.taxful_total_price_value) < 0.01
-            assert cielo_transaction.status.value == transacao.status
 
             # Check payment return
             response = c.get(process_payment_return_path)
             assert response.status_code == 302, "Payment return should redirect forth"
             assert response.url.endswith(order_complete_path)
 
-            cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
+            cielo_order_transaction = CieloOrderTransaction.objects.filter(order=order).first()
+            "{0}".format(cielo_order_transaction) # just to test __str__
+
+            cielo_transaction = CieloTransaction.objects.get(order_transaction__order=order, tid=tid)
+            assert cielo_transaction.status == CieloTransactionStatus.Authorized
             assert cielo_transaction.authorization_nsu == str(transacao.autorizacao.nsu)
             assert cielo_transaction.authorization_lr == str(transacao.autorizacao.lr)
             assert cielo_transaction.authorization_date == iso8601.parse_date(transacao.autorizacao.data_hora)
@@ -423,9 +350,114 @@ def test_credit_card_success_2():
             assert cielo_transaction.total_captured.value == Decimal()
             assert cielo_transaction.total_reversed.value == Decimal()
 
-            order.refresh_from_db()
-            assert order.payment_status == PaymentStatus.FULLY_PAID
-            assert order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY) is None  # removed key
+    order.refresh_from_db()
+    assert order.payment_data.get(CIELO_TRANSACTION_ID_KEY)
+    assert order.payment_data.get(CIELO_ORDER_TRANSACTION_ID_KEY)
+    assert order.payment_status == PaymentStatus.NOT_PAID
+
+
+@pytest.mark.django_db
+def test_credit_card_success_3():
+    """
+        Caso:
+            - Transação com Cartão de Crédito
+            - Auto captura desabilidato
+            - Sem URL para autenticação
+            - 4 parcelas com juros
+    """
+    initialize()
+
+    c = SmartClient()
+    default_product = get_default_product()
+
+    basket_path = reverse("shuup:basket")
+    c.post(basket_path, data={
+        "command": "add",
+        "product_id": default_product.pk,
+        "quantity": 10,
+        "supplier": get_default_supplier().pk
+    })
+
+    ORDER_TOTAL = PRODUCT_PRICE * 10
+
+    # Create methods
+    shipping_method = get_default_shipping_method()
+    processor = get_payment_provider()
+
+    # aumenta o limite máximo de parcelas para 4
+    cielo_config = get_cielo_config()
+    cielo_config.max_installments = 4
+    cielo_config.installments_without_interest = 1
+    cielo_config.interest_rate = Decimal(3.20)
+    cielo_config.save()
+
+    payment_method = processor.create_service(
+        CIELO_SERVICE_CREDIT,
+        identifier="cielo_phase_cc",
+        shop=get_default_shop(),
+        name="credit card",
+        enabled=True,
+        tax_class=get_default_tax_class())
+
+    # Resolve paths
+    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
+    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
+    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
+    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
+
+    addresses_soup = c.soup(addresses_path)
+    inputs = fill_address_inputs(addresses_soup, with_company=False)
+    c.post(addresses_path, data=inputs)
+    c.post(methods_path,data={"payment_method": payment_method.pk,"shipping_method": shipping_method.pk})
+    c.get(confirm_path)
+
+    tid = uuid.uuid4().hex
+    transacao = get_in_progress_transaction(numero=1,
+                                            valor=decimal_to_int_cents(ORDER_TOTAL),
+                                            produto=CieloProduct.Credit,
+                                            bandeira=CieloCardBrand.Visa,
+                                            parcelas=CC_VISA_1X_INFO['installments'],
+                                            tid=tid,
+                                            return_url=None)
+    transacao = get_approved_transaction(transacao)
+
+    with patch.object(CieloRequest, 'autorizar', return_value=transacao):
+        with patch.object(CieloRequest, 'consultar', return_value=transacao):
+            # Phase: pay
+            c.soup(payment_path)
+            response = c.post(transaction_path, CC_VISA_4X_INFO)
+
+            assert response.status_code == 200
+            json_content = json.loads(response.content.decode("utf-8"))
+            assert json_content['redirect_url'].endswith(reverse("shuup:cielo_transaction_return",
+                                                                 kwargs={"cielo_order_pk": 1}))
+
+            choices = InstallmentContext(ORDER_TOTAL, cielo_config).get_intallments_choices()
+
+            cielo_transaction = CieloTransaction.objects.get(tid=tid)
+            assert cielo_transaction.cc_product == CieloProduct.InstallmentCredit
+            assert abs(cielo_transaction.total_value - choices[3][2]) <= Decimal(0.01)
+            assert cielo_transaction.status.value == transacao.status
+
+            response = c.post(json_content['redirect_url'])
+            confirm_soup = c.soup(confirm_path)
+            response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
+
+            order = Order.objects.filter(payment_method=payment_method).first()
+            assert abs(order.taxful_total_price.value - choices[3][2]) <= Decimal(0.01)
+
+            process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
+            process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
+            response = c.get(process_payment_path)
+
+            response = c.get(process_payment_return_path)
+            cielo_transaction = CieloTransaction.objects.get(order_transaction__order=order, tid=tid)
+
+    order.refresh_from_db()
+    assert order.payment_data.get(CIELO_TRANSACTION_ID_KEY)
+    assert order.payment_data.get(CIELO_ORDER_TRANSACTION_ID_KEY)
+    assert order.payment_status == PaymentStatus.NOT_PAID
 
 
 @pytest.mark.django_db
@@ -451,9 +483,16 @@ def test_credit_card_fail():
         "supplier": get_default_supplier().pk
     })
 
+    ORDER_TOTAL = PRODUCT_PRICE * 10
+
     # Create methods
     shipping_method = get_default_shipping_method()
     processor = get_payment_provider()
+
+    # aumenta o limite máximo de parcelas para 4
+    cielo_config = get_cielo_config()
+    cielo_config.max_installments = 4
+    cielo_config.save()
 
     payment_method = processor.create_service(
         CIELO_SERVICE_CREDIT,
@@ -461,90 +500,55 @@ def test_credit_card_fail():
         shop=get_default_shop(),
         name="credit card",
         enabled=True,
-        tax_class=get_default_tax_class())
+        tax_class=get_default_tax_class()
+    )
 
     # Resolve paths
     addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
     methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
     payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
     confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
 
     # Phase: Addresses
     addresses_soup = c.soup(addresses_path)
     inputs = fill_address_inputs(addresses_soup, with_company=False)
     c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
+    c.post(methods_path, data={"payment_method": payment_method.pk, "shipping_method": shipping_method.pk})
     c.get(confirm_path)
 
-    # Phase: Cielo
-    c.soup(payment_path)
-    c.post(payment_path, data={"cc_number": '4012001038443335',
-                                          "cc_brand": CieloCardBrand.Visa,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '4'})
-
-
-    # Phase: Confirm
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    order = Order.objects.filter(payment_method=payment_method).first()
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-
     tid = uuid.uuid4().hex
-
-    transacao = Transacao(
-        pedido=dict_to_pedido({'numero':str(order.pk),
-                               'valor': decimal_to_int_cents(order.taxful_total_price_value),
-                               'moeda':941,
-                               'data-hora':'2016-01-01T01:00Z'}),
-        pagamento=dict_to_pagamento({'bandeira':CieloCardBrand.Visa,
-                                     'produto':CieloProduct.Credit,
-                                     'parcelas':1}),
-        token=None,
-        captura=None,
-        cancelamento=None,
-        tid=tid,
-        pan=None,
-        status=CieloTransactionStatus.Authorized.value,
-    )
-
-    transacao.autenticacao = dict_to_autenticacao({'codigo':'13123',
-                                                   'mensagem':'autorizado',
-                                                   'data-hora':'2016-01-01T01:00Z',
-                                                   'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                   'eci':2})
-
-    transacao.autorizacao = dict_to_autorizacao({'codigo':'31321',
-                                                 'mensagem':'autenticar',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'lr':0,
-                                                 'nsu':'123'})
+    transacao = get_in_progress_transaction(1,
+                                         decimal_to_int_cents(ORDER_TOTAL),
+                                         CieloProduct.InstallmentCredit,
+                                         CieloCardBrand.Visa,
+                                         CC_VISA_4X_INFO['installments'],
+                                         tid,
+                                         return_url=None)
+    transacao = get_approved_transaction(transacao)
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
-            # remove de proposito os dados do pagamento
+            # Phase: pay
+            c.soup(payment_path)
+            response = c.post(transaction_path, CC_VISA_4X_INFO)
+
+            json_content = json.loads(response.content.decode("utf-8"))
+            response = c.post(json_content['redirect_url'])
+            confirm_soup = c.soup(confirm_path)
+
+            response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
+
+            order = Order.objects.filter(payment_method=payment_method).first()
+            process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
+
+            # FORCE CLEAR ORDER PAYMENT DATA
             order.payment_data = {}
             order.save()
 
-            c.get(process_payment_path)
+            response = c.get(process_payment_path)
 
             order.refresh_from_db()
-            # pedido cancelado
             assert order.status == OrderStatus.objects.get_default_canceled()
 
 
@@ -571,9 +575,16 @@ def test_credit_card_fail2():
         "supplier": get_default_supplier().pk
     })
 
+    ORDER_TOTAL = PRODUCT_PRICE * 10
+
     # Create methods
     shipping_method = get_default_shipping_method()
     processor = get_payment_provider()
+
+    # aumenta o limite máximo de parcelas para 4
+    cielo_config = get_cielo_config()
+    cielo_config.max_installments = 4
+    cielo_config.save()
 
     payment_method = processor.create_service(
         CIELO_SERVICE_CREDIT,
@@ -581,90 +592,58 @@ def test_credit_card_fail2():
         shop=get_default_shop(),
         name="credit card",
         enabled=True,
-        tax_class=get_default_tax_class())
+        tax_class=get_default_tax_class()
+    )
 
     # Resolve paths
     addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
     methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
     payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
     confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
 
     # Phase: Addresses
     addresses_soup = c.soup(addresses_path)
     inputs = fill_address_inputs(addresses_soup, with_company=False)
     c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
+    c.post(methods_path, data={"payment_method": payment_method.pk, "shipping_method": shipping_method.pk})
     c.get(confirm_path)
 
-    # Phase: Cielo
-    c.soup(payment_path)
-    c.post(payment_path, data={"cc_number": '4012001038443335',
-                                          "cc_brand": CieloCardBrand.Visa,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '4'})
-
-
-    # Phase: Confirm
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    order = Order.objects.filter(payment_method=payment_method).first()
-
-    # Forja um valor incorreto no total do juros
-    order.payment_data[CIELO_INSTALLMENT_INFO_KEY]['interest_total'] = order.payment_data[CIELO_INSTALLMENT_INFO_KEY]['interest_total'] + 1.0
-    order.save()
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-
     tid = uuid.uuid4().hex
-
-    transacao = Transacao(
-        pedido=dict_to_pedido({'numero':str(order.pk),
-                               'valor': decimal_to_int_cents(order.taxful_total_price_value),
-                               'moeda':941,
-                               'data-hora':'2016-01-01T01:00Z'}),
-        pagamento=dict_to_pagamento({'bandeira':CieloCardBrand.Visa,
-                                     'produto':CieloProduct.Credit,
-                                     'parcelas':1}),
-        token=None,
-        captura=None,
-        cancelamento=None,
-        tid=tid,
-        pan=None,
-        status=CieloTransactionStatus.Authorized.value,
-    )
-
-    transacao.autenticacao = dict_to_autenticacao({'codigo':'13123',
-                                                   'mensagem':'autorizado',
-                                                   'data-hora':'2016-01-01T01:00Z',
-                                                   'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                   'eci':2})
-
-    transacao.autorizacao = dict_to_autorizacao({'codigo':'31321',
-                                                 'mensagem':'autenticar',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'lr':0,
-                                                 'nsu':'123'})
+    transacao = get_in_progress_transaction(1,
+                                         decimal_to_int_cents(ORDER_TOTAL),
+                                         CieloProduct.InstallmentCredit,
+                                         CieloCardBrand.Visa,
+                                         CC_VISA_4X_INFO['installments'],
+                                         tid,
+                                         return_url=None)
+    transacao = get_approved_transaction(transacao)
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
-            c.get(process_payment_path)
+            # Phase: pay
+            c.soup(payment_path)
+            response = c.post(transaction_path, CC_VISA_4X_INFO)
 
-            order.refresh_from_db()
-            # pedido cancelado
-            assert order.status == OrderStatus.objects.get_default_canceled()
+            json_content = json.loads(response.content.decode("utf-8"))
+            response = c.post(json_content['redirect_url'])
+
+            # ok, no redirect
+            response = c.get(confirm_path)
+            assert response.status_code == 200
+
+            # sabotagem: adiciona um item ao carrinho
+            c.post(basket_path, data={
+                "command": "add",
+                "product_id": default_product.pk,
+                "quantity": 10,
+                "supplier": get_default_supplier().pk
+            })
+
+            # again, now with redirect
+            response = c.get(confirm_path)
+            assert response.status_code == 302
+            assert response.url.endswith(payment_path)
 
 
 @pytest.mark.django_db
@@ -685,22 +664,28 @@ def test_debit_auto_capture_with_auth():
     add_to_basket_resp = c.post(basket_path, data={
         "command": "add",
         "product_id": default_product.pk,
-        "quantity": 1,
+        "quantity": 10,
         "supplier": get_default_supplier().pk
     })
     assert add_to_basket_resp.status_code < 400
 
+    ORDER_TOTAL = PRODUCT_PRICE * 10
 
     # Create methods
     shipping_method = get_default_shipping_method()
-    processor = get_payment_provider(auto_capture=True)
-    assert isinstance(processor, CieloWS15PaymentProcessor)
+    processor = get_payment_provider()
+    assert isinstance(processor, CieloPaymentProcessor)
+
+    # aumenta o limite máximo de parcelas para 4
+    cielo_config = get_cielo_config()
+    cielo_config.max_installments = 4
+    cielo_config.save()
 
     payment_method = processor.create_service(
-        CIELO_SERVICE_DEBIT,
-        identifier="cielo_phase_d",
+        CIELO_SERVICE_CREDIT,
+        identifier="cielo_phase_cc",
         shop=get_default_shop(),
-        name="debit card",
+        name="credit card",
         enabled=True,
         tax_class=get_default_tax_class())
 
@@ -708,6 +693,7 @@ def test_debit_auto_capture_with_auth():
     addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
     methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
     payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
+    transaction_path = reverse("shuup:cielo_make_transaction")
     confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
 
 
@@ -734,105 +720,65 @@ def test_debit_auto_capture_with_auth():
     assert response.status_code == 302, "Confirm should first redirect forth"
     assert response.url.endswith(payment_path)
 
-    # Phase: Cielo
-    response = c.soup(payment_path)
-    response = c.post(payment_path, data={"cc_number": '5453010000066167',
-                                          "cc_brand": CieloCardBrand.Mastercard,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '1'})
-
-    assert response.status_code == 302, "Valid payment form should redirect forth"
-    assert response.url.endswith(confirm_path)
-
-    # Phase: Confirm
-    assert Order.objects.count() == 0
-    confirm_soup = c.soup(confirm_path)
-    response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    assert response.status_code == 302, "Confirm should redirect forth"
-
-    assert Order.objects.count() == 1
-    order = Order.objects.filter(payment_method=payment_method).first()
-    assert order.payment_data.get(CIELO_DEBIT_CARD_INFO_KEY)
-    assert order.payment_status == PaymentStatus.NOT_PAID
-
-    AUTH_URL = 'http://CUSTUM_URL'
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-    process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
-    order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
-    checkout_auth_redirect_path = "{0}?auth_url={1}".format(reverse("shuup:checkout_auth_redirect"),
-                                                            escape_uri_path(base64.b64encode(AUTH_URL.encode()).decode()))
-
-    # Check confirm redirection to payment page
-    assert response.url.endswith(process_payment_path), ("Confirm should have redirected to payment page")
-
     tid = uuid.uuid4().hex
 
-    transacao = Transacao(
-        pedido=dict_to_pedido({'numero':str(order.pk),
-                               'valor': decimal_to_int_cents(order.taxful_total_price_value),
-                               'moeda':941,
-                               'data-hora':'2016-01-01T01:00Z'}),
-        pagamento=dict_to_pagamento({'bandeira':CieloCardBrand.Mastercard,
-                                     'produto':CieloProduct.Debit,
-                                     'parcelas':1}),
-        token=None,
-        captura=None,
-        cancelamento=None,
-        tid=tid,
-        pan=None,
-        status=CieloTransactionStatus.InProgress.value,
-        url_autenticacao=AUTH_URL,
-    )
-
-    with patch.object(CieloRequest, 'autorizar', return_value=transacao):
-        # Visit payment page
-        response = c.get(process_payment_path)
-        assert response.status_code == 302, "Payment page should redirect forth"
-        assert response.url.endswith(checkout_auth_redirect_path)
-
-        order.refresh_from_db()
-        assert order.payment_data.get(CIELO_TID_INFO_KEY) == tid
-
-        cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
-        assert cielo_transaction.cc_brand == CieloCardBrand.Mastercard
-        assert cielo_transaction.cc_holder == 'Joao de souza'
-        assert cielo_transaction.installments == 1
-        assert cielo_transaction.cc_product == CieloProduct.Debit
-        assert abs(cielo_transaction.total.value - order.taxful_total_price_value) < 0.01
-        assert cielo_transaction.status.value == transacao.status
-
-    transacao.status = CieloTransactionStatus.Captured.value
-    transacao.autenticacao = dict_to_autenticacao({'codigo':'13123',
-                                                 'mensagem':'autorizado',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'eci':2})
-
-    transacao.autorizacao = dict_to_autorizacao({'codigo':'31321',
-                                                 'mensagem':'autenticar',
-                                                 'data-hora':'2016-01-01T01:00Z',
-                                                 'valor':decimal_to_int_cents(order.taxful_total_price_value),
-                                                 'lr':0,
-                                                 'nsu':'123'
-                                               })
-    transacao.captura = dict_to_captura({'codigo':'1312',
-                                         'mensagem':'capturado',
-                                         'data-hora':'2016-01-01T01:00Z',
-                                         'valor':decimal_to_int_cents(order.taxful_total_price_value)})
+    transacao = get_in_progress_transaction(1,
+                                         decimal_to_int_cents(ORDER_TOTAL),
+                                         CieloProduct.InstallmentCredit,
+                                         CieloCardBrand.Visa,
+                                         CC_VISA_4X_INFO['installments'],
+                                         tid,
+                                         return_url=None)
+    transacao = get_approved_transaction(transacao)
+    transacao = get_captured_transaction(transacao)
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
             with patch.object(CieloRequest, 'capturar', return_value=transacao):
+                # Phase: pay
+                response = c.soup(payment_path)
+                response = c.post(transaction_path, CC_VISA_4X_INFO)
+
+                assert response.status_code == 200
+                json_content = json.loads(response.content.decode("utf-8"))
+                assert json_content['redirect_url'].endswith(reverse("shuup:cielo_transaction_return",
+                                                                     kwargs={"cielo_order_pk": 1}))
+
+                cielo_transaction = CieloTransaction.objects.get(tid=tid)
+                assert cielo_transaction.cc_brand == CC_VISA_4X_INFO['cc_brand']
+                assert cielo_transaction.cc_holder == CC_VISA_4X_INFO['cc_holder']
+                assert cielo_transaction.installments == CC_VISA_4X_INFO['installments']
+                assert cielo_transaction.cc_product == CieloProduct.InstallmentCredit
+                assert abs(cielo_transaction.total_value - ORDER_TOTAL) < 0.01
+                assert cielo_transaction.status.value == transacao.status
+
+                response = c.post(json_content['redirect_url'])
+                assert response.status_code == 302
+                assert response.url.endswith(confirm_path)
+
+                # Phase: Confirm
+                assert Order.objects.count() == 0
+                confirm_soup = c.soup(confirm_path)
+                response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
+                assert response.status_code == 302, "Confirm should redirect forth"
+
+                order = Order.objects.filter(payment_method=payment_method).first()
+                process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
+                process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
+                order_complete_path = reverse("shuup:order_complete",kwargs={"pk": order.pk, "key": order.key})
+
+                response = c.get(process_payment_path)
+                assert response.status_code == 302, "Payment page should redirect forth"
+                assert response.url.endswith(process_payment_return_path)
+
                 # Check payment return
                 response = c.get(process_payment_return_path)
                 assert response.status_code == 302, "Payment return should redirect forth"
                 assert response.url.endswith(order_complete_path)
 
-                cielo_transaction = CieloWS15Transaction.objects.get(order=order, tid=tid)
+                cielo_transaction = CieloTransaction.objects.get(order_transaction__order=order, tid=tid)
+                assert cielo_transaction.status == CieloTransactionStatus.Captured
+
                 assert cielo_transaction.authorization_nsu == str(transacao.autorizacao.nsu)
                 assert cielo_transaction.authorization_lr == str(transacao.autorizacao.lr)
                 assert cielo_transaction.authorization_date == iso8601.parse_date(transacao.autorizacao.data_hora)
@@ -840,416 +786,10 @@ def test_debit_auto_capture_with_auth():
                 assert cielo_transaction.authentication_eci == transacao.autenticacao.eci
                 assert cielo_transaction.authentication_date == iso8601.parse_date(transacao.autenticacao.data_hora)
 
-                assert abs(cielo_transaction.total_captured.value - order.taxful_total_price_value) < 0.01
-                assert cielo_transaction.total_reversed.value == Decimal()
+                assert cielo_transaction.total_captured_value == ORDER_TOTAL
+                assert cielo_transaction.total_reversed_value == Decimal()
 
     order.refresh_from_db()
-    assert order.payment_status == PaymentStatus.FULLY_PAID
-    assert order.payment_data.get(CIELO_DEBIT_CARD_INFO_KEY) is None  # removed key
-
-
-
-@pytest.mark.django_db
-def test_save_cc_info():
-    initialize()
-
-    c = SmartClient()
-    default_product = get_default_product()
-
-    basket_path = reverse("shuup:basket")
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 1,
-        "supplier": get_default_supplier().pk
-    })
-
-    shipping_method = get_default_shipping_method()
-    processor = get_payment_provider(auto_capture=True)
-
-    payment_method = processor.create_service(
-        CIELO_SERVICE_DEBIT,
-        identifier="cielo_phase_d",
-        shop=get_default_shop(),
-        name="debit card",
-        enabled=True,
-        tax_class=get_default_tax_class())
-
-    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
-    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
-    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
-    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
-    # Phase: Addresses
-    addresses_soup = c.soup(addresses_path)
-    inputs = fill_address_inputs(addresses_soup, with_company=False)
-    c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
-    form_cc_info = {
-        "cc_number": '5453010000066167',
-        "cc_brand": CieloCardBrand.Mastercard,
-        "cc_holder": "Joao de souza",
-        "cc_valid_year": now().year+1,
-        "cc_valid_month": "%02d" % now().month,
-        "cc_security_code": "123",
-        "installments": '1'
-    }
-    c.post(payment_path, data=form_cc_info)
-
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-
-    order = Order.objects.filter(payment_method=payment_method).first()
-    cc_info = signing.loads(order.payment_data.get(CIELO_DEBIT_CARD_INFO_KEY))
-
-    assert form_cc_info['cc_number'] == cc_info['cc_number']
-    assert form_cc_info['cc_brand'] == cc_info['cc_brand']
-    assert form_cc_info['cc_holder'] == cc_info['cc_holder']
-    assert str(form_cc_info['cc_valid_year']) == cc_info['cc_valid_year']
-    assert str(form_cc_info['cc_valid_month']) == cc_info['cc_valid_month']
-    assert form_cc_info['cc_security_code'] == cc_info['cc_security_code']
-    assert str(form_cc_info['installments']) == cc_info['installments']
-
-
-@pytest.mark.django_db
-def test_change_cart_half_way():
-    """
-        Caso:
-            - Sem autenticacao
-            - Sem auto-captura
-            - Parcelado 3x
-            - Usuário altera carrinho depois de selecionar parcelas
-    """
-    initialize()
-
-    c = SmartClient()
-    default_product = get_default_product()
-
-    basket_path = reverse("shuup:basket")
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 1,
-        "supplier": get_default_supplier().pk
-    })
-
-    shipping_method = get_default_shipping_method()
-    processor = get_payment_provider(installments_without_interest=1)
-
-    payment_method = processor.create_service(
-        CIELO_SERVICE_CREDIT,
-        identifier="cielo_phase_cc",
-        shop=get_default_shop(),
-        name="credit card",
-        enabled=True,
-        tax_class=get_default_tax_class())
-
-    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
-    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
-    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
-    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
-    # Phase: Addresses
-    addresses_soup = c.soup(addresses_path)
-    inputs = fill_address_inputs(addresses_soup, with_company=False)
-    c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
-    form_cc_info = {
-        "cc_number": '5453010000066167',
-        "cc_brand": CieloCardBrand.Mastercard,
-        "cc_holder": "Joao de souza",
-        "cc_valid_year": now().year+1,
-        "cc_valid_month": "%02d" % now().month,
-        "cc_security_code": "123",
-        "installments": '3'
-    }
-    c.post(payment_path, data=form_cc_info)
-
-    response = c.get(confirm_path)
-    assert response.status_code == 200
-    confirm_soup = c.soup(confirm_path)
-
-    # adiciona mais um produto no carrinho
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 1,
-        "supplier": get_default_supplier().pk
-    })
-
-    # tenta fechar o pedido com os dados antigos
-    response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
-
-    # deve redirecionar o usuário para a pagina de pagamento
-    assert response.status_code == 302
-    assert response.url.endswith(payment_path)
-
-    # salva os dados do cartao de novo
-    c.post(payment_path, data=form_cc_info)
-    confirm_soup = c.soup(confirm_path)
-
-    # agora vai!
-    response = c.post(confirm_path, data=extract_form_fields(confirm_soup))
-
-    order = Order.objects.filter(payment_method=payment_method).first()
-    cc_info = signing.loads(order.payment_data.get(CIELO_CREDIT_CARD_INFO_KEY))
-
-    assert form_cc_info['cc_number'] == cc_info['cc_number']
-    assert form_cc_info['cc_brand'] == cc_info['cc_brand']
-    assert form_cc_info['cc_holder'] == cc_info['cc_holder']
-    assert str(form_cc_info['cc_valid_year']) == cc_info['cc_valid_year']
-    assert str(form_cc_info['cc_valid_month']) == cc_info['cc_valid_month']
-    assert form_cc_info['cc_security_code'] == cc_info['cc_security_code']
-    assert str(form_cc_info['installments']) == cc_info['installments']
-
-
-@pytest.mark.django_db
-def test_installment_interest():
-    initialize()
-
-    c = SmartClient()
-    default_product = get_default_product()
-
-    basket_path = reverse("shuup:basket")
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 3,
-        "supplier": get_default_supplier().pk
-    })
-
-    shipping_method = get_default_shipping_method()
-    processor = get_payment_provider(installments_without_interest=1)
-
-    payment_method = processor.create_service(
-        CIELO_SERVICE_CREDIT,
-        identifier="cielo_phase_cc",
-        shop=get_default_shop(),
-        name="credit card",
-        enabled=True,
-        tax_class=get_default_tax_class())
-
-    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
-    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
-    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
-    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
-    # Phase: Addresses
-    addresses_soup = c.soup(addresses_path)
-    inputs = fill_address_inputs(addresses_soup, with_company=False)
-    c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
-    form_cc_info = {
-        "cc_number": '5453010000066167',
-        "cc_brand": CieloCardBrand.Mastercard,
-        "cc_holder": "Joao de souza",
-        "cc_valid_year": now().year+1,
-        "cc_valid_month": "%02d" % now().month,
-        "cc_security_code": "123",
-        "installments": '3'
-    }
-    c.post(payment_path, data=form_cc_info)
-
-    response = c.get(confirm_path)
-    assert response.status_code == 200
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    order = Order.objects.filter(payment_method=payment_method).first()
-
-    # calcula o juros que havera no pedido com o parcelamento
-    payment_method_total = sum([line.price.value for line in order.lines.filter(type=OrderLineType.PAYMENT)])
-    product_total = sum([line.price.value for line in order.lines.filter(type=OrderLineType.PRODUCT)])
-    assert payment_method_total > 0
-    assert order.taxful_total_price_value == (payment_method_total + product_total)
-
-
-@pytest.mark.django_db
-def test_error_response_tid_doesnt_exist():
-    """
-        Caso:
-            - Transação com Cartão de Débito
-            - Auto captura DESABILITADO
-            - Com URL para autenticação
-            - 1 parcela
-            - ERRO: Transação não existe em process_payment_return_request
-    """
-    initialize()
-
-    c = SmartClient()
-    default_product = get_default_product()
-
-    basket_path = reverse("shuup:basket")
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 1,
-        "supplier": get_default_supplier().pk
-    })
-
-    shipping_method = get_default_shipping_method()
-    processor = get_payment_provider(auto_capture=True)
-
-    payment_method = processor.create_service(
-        CIELO_SERVICE_DEBIT,
-        identifier="cielo_phase_d",
-        shop=get_default_shop(),
-        name="debit card",
-        enabled=True,
-        tax_class=get_default_tax_class())
-
-    # Resolve paths
-    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
-    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
-    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
-    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
-    # Phase: Addresses
-    addresses_soup = c.soup(addresses_path)
-    inputs = fill_address_inputs(addresses_soup, with_company=False)
-    c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
-    c.get(confirm_path)
-
-    # Phase: Cielo
-    c.soup(payment_path)
-    c.post(payment_path, data={"cc_number": '5453010000066167',
-                                          "cc_brand": CieloCardBrand.Mastercard,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '1'})
-    # Phase: Confirm
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-
-    order = Order.objects.filter(payment_method=payment_method).first()
-
-    process_payment_return_path = reverse("shuup:order_process_payment_return",kwargs={"pk": order.pk, "key": order.key})
-    c.post(process_payment_return_path)
-    # Order must be cancelled
-    order.refresh_from_db()
-    assert order.status == OrderStatus.objects.get_default_canceled()
-
-
-@pytest.mark.django_db
-def test_credit_card_non_authorized_error():
-    """
-        Caso:
-            - Transação com Cartão de Crédito
-            - Auto captura desabilidato
-            - Sem URL para autenticação
-            - 1 parcela sem juros
-            - Transação negada
-    """
-    initialize()
-
-    c = SmartClient()
-    default_product = get_default_product()
-
-    basket_path = reverse("shuup:basket")
-    c.post(basket_path, data={
-        "command": "add",
-        "product_id": default_product.pk,
-        "quantity": 1,
-        "supplier": get_default_supplier().pk
-    })
-
-    # Create methods
-    shipping_method = get_default_shipping_method()
-    processor = get_payment_provider()
-
-    payment_method = processor.create_service(
-        CIELO_SERVICE_CREDIT,
-        identifier="cielo_phase_cc",
-        shop=get_default_shop(),
-        name="credit card",
-        enabled=True,
-        tax_class=get_default_tax_class())
-
-    # Resolve paths
-    addresses_path = reverse("shuup:checkout", kwargs={"phase": "addresses"})
-    methods_path = reverse("shuup:checkout", kwargs={"phase": "methods"})
-    payment_path = reverse("shuup:checkout", kwargs={"phase": "payment"})
-    confirm_path = reverse("shuup:checkout", kwargs={"phase": "confirm"})
-
-
-    # Phase: Addresses
-    addresses_soup = c.soup(addresses_path)
-    inputs = fill_address_inputs(addresses_soup, with_company=False)
-    c.post(addresses_path, data=inputs)
-
-    # Phase: Methods
-    c.post(
-        methods_path,
-        data={
-            "payment_method": payment_method.pk,
-            "shipping_method": shipping_method.pk
-        }
-    )
-
-    c.get(confirm_path)
-
-    # Phase: Cielo
-    c.soup(payment_path)
-    c.post(payment_path, data={"cc_number": '4012001038443335',
-                                          "cc_brand": CieloCardBrand.Visa,
-                                          "cc_holder": "Joao de souza",
-                                          "cc_valid_year": now().year+1,
-                                          "cc_valid_month": "%02d" % now().month,
-                                          "cc_security_code": "123",
-                                          "installments": '1'})
-
-    # Phase: Confirm
-    confirm_soup = c.soup(confirm_path)
-    c.post(confirm_path, data=extract_form_fields(confirm_soup))
-    order = Order.objects.filter(payment_method=payment_method).first()
-
-    process_payment_path = reverse("shuup:order_process_payment", kwargs={"pk": order.pk, "key": order.key})
-
-    # Testa erro de código seguranca invalido
-    with patch.object(CieloRequest, 'autorizar') as mocked:
-        mocked.side_effect = CieloRequestError('8 - {0}'.format(CieloErrorMap[8]))
-        response = c.get(process_payment_path)
-        assert "{0}".format(response.content.decode("utf-8")).index("Unknown error") >= 0
-
-    with patch.object(CieloRequest, 'autorizar') as mocked:
-        mocked.side_effect = CieloRequestError('17 - {0}'.format(CieloErrorMap[17]))
-        response = c.get(process_payment_path)
-        assert "{0}".format(response.content.decode("utf-8")).index("Invalid security code") >= 0
+    assert order.payment_data.get(CIELO_TRANSACTION_ID_KEY)
+    assert order.payment_data.get(CIELO_ORDER_TRANSACTION_ID_KEY)
+    assert order.payment_status == PaymentStatus.NOT_PAID

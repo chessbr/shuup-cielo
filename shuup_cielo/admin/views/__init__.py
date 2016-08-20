@@ -12,13 +12,13 @@ from decimal import Decimal
 
 import shuup_cielo
 from shuup_cielo.constants import CieloTransactionStatus
-from shuup_cielo.models import CieloWS15Transaction
-
-from cielo_webservice.exceptions import CieloRequestError
+from shuup_cielo.models import CieloTransaction
 
 from django.http.response import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render_to_response
 from django.views.generic.base import TemplateView, View
+
+from cielo_webservice.exceptions import CieloRequestError
 
 TRANSACTION_DETAIL_TEMPLAE = 'cielo/admin/order_section_transaction_detail.jinja'
 
@@ -40,7 +40,7 @@ class RefreshTransactionView(View):
 
     def post(self, request, *args, **kwargs):
         try:
-            cielo_transaction = CieloWS15Transaction.objects.get(pk=request.POST.get('id'))
+            cielo_transaction = CieloTransaction.objects.get(pk=request.POST.get('id'))
             cielo_transaction.refresh()
             return render_to_response(TRANSACTION_DETAIL_TEMPLAE, {'transaction': cielo_transaction,
                                                                    'CieloTransactionStatus': CieloTransactionStatus})
@@ -63,7 +63,7 @@ class CaptureTransactionView(View):
         '''
 
         try:
-            cielo_transaction = CieloWS15Transaction.objects.get(pk=request.POST.get('id'))
+            cielo_transaction = CieloTransaction.objects.get(pk=request.POST.get('id'))
             amount = Decimal(request.POST.get('amount', cielo_transaction.total_value))
 
             try:
@@ -71,7 +71,6 @@ class CaptureTransactionView(View):
             except CieloRequestError as err:
                 return HttpResponseBadRequest("{0}".format(err))
 
-            cielo_transaction.refresh()
             return render_to_response(TRANSACTION_DETAIL_TEMPLAE, {'transaction': cielo_transaction,
                                                                    'CieloTransactionStatus': CieloTransactionStatus})
 
@@ -93,7 +92,7 @@ class CancelTransactionView(View):
         '''
 
         try:
-            cielo_transaction = CieloWS15Transaction.objects.get(pk=request.POST.get('id'))
+            cielo_transaction = CieloTransaction.objects.get(pk=request.POST.get('id'))
             amount = Decimal(request.POST.get('amount', cielo_transaction.total_value))
 
             try:
@@ -101,7 +100,6 @@ class CancelTransactionView(View):
             except CieloRequestError as err:
                 return HttpResponseBadRequest("{0}".format(err))
 
-            cielo_transaction.refresh()
             return render_to_response(TRANSACTION_DETAIL_TEMPLAE, {'transaction': cielo_transaction,
                                                                    'CieloTransactionStatus': CieloTransactionStatus})
 

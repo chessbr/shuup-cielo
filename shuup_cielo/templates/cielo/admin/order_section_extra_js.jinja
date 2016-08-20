@@ -17,38 +17,42 @@
     }
 
     function capture(pk){
-        $.ajax({
-            type: "POST",
-            url: "{{ url('shuup_admin:cielo.transaction-capture') }}",
-            data: {
-                "id": pk,
-                "amount": $('#capture-'+pk+'-amount').val(),
-                "csrfmiddlewaretoken": '{{ csrf_token }}',
-            },
-            success: function(data){
-                $('#transaction-'+pk).html(data);
-            },
-            error: function(data){
-                alert("{% trans %}There was an error capturing the transaction.{% endtrans %}: " + data.responseText)
-            },
-        });
+        if(confirm("{{ _("Are you sure do you want to CAPTURE this transaction?") }}")){
+            $.ajax({
+                type: "POST",
+                url: "{{ url('shuup_admin:cielo.transaction-capture') }}",
+                data: {
+                    "id": pk,
+                    "amount": $('#capture-'+pk+'-amount').val(),
+                    "csrfmiddlewaretoken": '{{ csrf_token }}',
+                },
+                success: function(data){
+                    $('#transaction-'+pk).html(data);
+                },
+                error: function(data){
+                    alert("{% trans %}There was an error capturing the transaction.{% endtrans %}: " + data.responseText)
+                },
+            });
+        }
     }
 
     function cancel(pk){
-        $.ajax({
-            type: "POST",
-            url: "{{ url('shuup_admin:cielo.transaction-cancel') }}",
-            data: {
-                "id": pk,
-                "amount": $('#cancel-'+pk+'-amount').val(),
-                "csrfmiddlewaretoken": '{{ csrf_token }}',
-            },
-            success: function(data){
-                $('#transaction-'+pk).html(data);
-            },
-            error: function(data){
-                alert("{% trans %}There was an error canceling the transaction.{% endtrans %}: " + data.responseText)
-            },
-        });
+        if(confirm("{{ _("Are you sure do you want to CANCEL this transaction?") }}")){
+            $.ajax({
+                type: "POST",
+                url: "{{ url('shuup_admin:cielo.transaction-cancel') }}",
+                data: {
+                    "id": pk,
+                    "amount": $('#cancel-'+pk+'-amount').val(),
+                    "csrfmiddlewaretoken": '{{ csrf_token }}',
+                },
+                success: function(data){
+                    $('#transaction-'+pk).html(data);
+                },
+                error: function(data){
+                    alert("{% trans %}There was an error canceling the transaction.{% endtrans %}: " + data.responseText)
+                },
+            });
+        }
     }
 </script>

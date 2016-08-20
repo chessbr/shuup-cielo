@@ -16,11 +16,10 @@ default_app_config = "shuup_cielo.apps.ShuupCieloAppConfig"
     TODO:
     * Poder visualizar as transações que não possuem pedidos relacionados
     * Criar model para registrar datas e valores de capturas e estornos
-    * REST para obter parcelamento por bandeira
     * Quando o Shuup possibilitar a retentativa de pagamento
       não cancelar o pedido se der erro na transação e sim
       informar o usuário par atentar novamente ou redirecionar
       para uma página especial da Cielo para retentar
-    * Ver uma melhor maneira de armazenar temporariamente os dados do cartao
     * Obter dados adicionais do portador do Cartão como CPF e Data de nascimento
+    * Worker para remover transações autorizadas mas não capturadas da sessão
 '''

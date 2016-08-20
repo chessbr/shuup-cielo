@@ -115,6 +115,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shuup_cielo.middleware.CieloTransactionMiddleware',
     'shuup.front.middleware.ProblemMiddleware',
     'shuup.front.middleware.ShuupFrontMiddleware',
 ]

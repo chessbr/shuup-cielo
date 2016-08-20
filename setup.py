@@ -31,7 +31,6 @@ EXCLUDED_PACKAGES = [
 ]
 
 REQUIRES = [
-    "python-cielo-webservice",
     "iso8601"
 ]
 
