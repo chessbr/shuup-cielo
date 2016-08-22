@@ -10,15 +10,14 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-import shuup_cielo
-from shuup_cielo.constants import CieloTransactionStatus
-from shuup_cielo.models import CieloTransaction
-
 from django.http.response import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render_to_response
 from django.views.generic.base import TemplateView, View
 
 from cielo_webservice.exceptions import CieloRequestError
+import shuup_cielo
+from shuup_cielo.constants import CieloTransactionStatus
+from shuup_cielo.models import CieloTransaction
 
 TRANSACTION_DETAIL_TEMPLAE = 'cielo/admin/order_section_transaction_detail.jinja'
 

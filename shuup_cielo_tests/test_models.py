@@ -10,13 +10,12 @@ from decimal import Decimal
 
 import pytest
 
-from shuup_cielo.models import DiscountPercentageBehaviorComponent
-from shuup_tests.core.test_order_creator import seed_source
-
 from shuup.core.models._order_lines import OrderLineType
 from shuup.testing.factories import (
     create_product, get_default_payment_method, get_default_shipping_method, get_default_supplier
 )
+from shuup_cielo.models import DiscountPercentageBehaviorComponent
+from shuup_tests.core.test_order_creator import seed_source
 
 
 # Testar InstallmentContext

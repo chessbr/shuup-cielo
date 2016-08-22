@@ -10,16 +10,16 @@
 import calendar
 from datetime import datetime
 
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+
 from shuup_cielo.constants import (
     CIELO_CREDITCARD_BRAND_CHOICES, CIELO_DEBITCARD_BRAND_CHOICES, CIELO_SERVICE_CREDIT,
     CIELO_SERVICE_DEBIT, CieloProduct, CieloProductMatrix
 )
 from shuup_cielo.utils import is_cc_valid, safe_int
-
-from django import forms
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
 
 
 class CieloPaymentForm(forms.Form):

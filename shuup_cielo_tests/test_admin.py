@@ -11,9 +11,23 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import uuid
 
+from django.core.urlresolvers import reverse
 from mock import patch
 import pytest
 
+from cielo_webservice.request import CieloRequest
+from shuup.core.defaults.order_statuses import create_default_order_statuses
+from shuup.core.models._orders import Order
+from shuup.core.models._product_shops import ShopProduct
+from shuup.testing.factories import (
+    get_default_product, get_default_shipping_method, get_default_shop, get_default_supplier,
+    get_default_tax_class
+)
+from shuup.testing.mock_population import populate_if_required
+from shuup.testing.soup_utils import extract_form_fields
+from shuup.testing.utils import apply_request_middleware
+from shuup.utils.importing import load
+from shuup.xtheme._theme import set_current_theme
 from shuup_cielo.admin.forms import (
     CieloConfigForm, CieloPaymentProcessorForm, DiscountPercentageBehaviorComponentForm
 )
@@ -29,23 +43,6 @@ from shuup_cielo_tests import (
 from shuup_cielo_tests.test_checkout import get_cielo_config, get_payment_provider
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
-
-from shuup.core.defaults.order_statuses import create_default_order_statuses
-from shuup.core.models._orders import Order
-from shuup.core.models._product_shops import ShopProduct
-from shuup.testing.factories import (
-    get_default_product, get_default_shipping_method, get_default_shop, get_default_supplier,
-    get_default_tax_class
-)
-from shuup.testing.mock_population import populate_if_required
-from shuup.testing.soup_utils import extract_form_fields
-from shuup.testing.utils import apply_request_middleware
-from shuup.utils.importing import load
-from shuup.xtheme._theme import set_current_theme
-
-from django.core.urlresolvers import reverse
-
-from cielo_webservice.request import CieloRequest
 
 
 def initialize():

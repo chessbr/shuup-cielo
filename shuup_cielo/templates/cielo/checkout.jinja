@@ -68,7 +68,6 @@
     </button>
     </div>
     {% endcall %}
-    
 </form>
 {% endblock %}
 
@@ -78,14 +77,17 @@
         var data = { cc_brand:this.value };
         var options = $("#{{ form.installments.id_for_label }}");
         options.empty();
+        options.append($('<option />').val(0).text('{{ _("Retrieving installments..") }}'));
 
         $.getJSON("{{ url('shuup:cielo_get_installment_options') }}", data)
         .done(function(result){
+            options.empty();
             $.each(result.installments, function(index, item){
                 options.append($('<option />').val(item.number).text(item.name));
             });
         })
         .fail(function(){
+            options.empty();
             options.append($('<option />').val(0).text('{{ _("Failed to retrieve installments") }}'));
         });
     });

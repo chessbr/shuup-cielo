@@ -7,10 +7,10 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 
-from shuup_cielo.views import GetInstallmentsOptionsView, TransactionReturnView, TransactionView
-
 from django.conf.urls import patterns, url
 from django.views.decorators.csrf import csrf_exempt
+
+from shuup_cielo.views import GetInstallmentsOptionsView, TransactionReturnView, TransactionView
 
 urlpatterns = patterns(
     '',

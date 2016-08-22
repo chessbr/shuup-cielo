@@ -11,17 +11,16 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import logging
 
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.http.response import HttpResponseRedirect
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 from enumfields import EnumIntegerField
 import iso8601
 
-from shuup_cielo.constants import (
-    CIELO_AUTHORIZATION_TYPE_CHOICES, CIELO_DECIMAL_PRECISION, CIELO_PRODUCT_CHOICES,
-    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CieloAuthorizationType, CieloTransactionStatus,
-    INTEREST_TYPE_CHOICES, InterestType
-)
-from shuup_cielo.objects import CIELO_ORDER_TRANSACTION_ID_KEY, CIELO_TRANSACTION_ID_KEY
-from shuup_cielo.utils import decimal_to_int_cents, InstallmentCalculator, safe_int
-
+from cielo_webservice.models import Comercial
+from cielo_webservice.request import CieloRequest
 from shuup.core.fields import MoneyValueField
 from shuup.core.models import PaymentProcessor, ServiceChoice
 from shuup.core.models._service_base import ServiceBehaviorComponent, ServiceCost
@@ -29,15 +28,13 @@ from shuup.core.models._shops import Shop
 from shuup.utils.analog import LogEntryKind
 from shuup.utils.excs import Problem
 from shuup.utils.properties import MoneyProperty
-
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-from django.http.response import HttpResponseRedirect
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext_lazy as _
-
-from cielo_webservice.models import Comercial
-from cielo_webservice.request import CieloRequest
+from shuup_cielo.constants import (
+    CIELO_AUTHORIZATION_TYPE_CHOICES, CIELO_DECIMAL_PRECISION, CIELO_PRODUCT_CHOICES,
+    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CieloAuthorizationType, CieloTransactionStatus,
+    INTEREST_TYPE_CHOICES, InterestType
+)
+from shuup_cielo.objects import CIELO_ORDER_TRANSACTION_ID_KEY, CIELO_TRANSACTION_ID_KEY
+from shuup_cielo.utils import decimal_to_int_cents, InstallmentCalculator, safe_int
 
 logger = logging.getLogger(__name__)
 

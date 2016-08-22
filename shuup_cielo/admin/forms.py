@@ -9,13 +9,12 @@
 
 from __future__ import unicode_literals
 
+from django import forms
+
+from shuup.admin.forms import ShuupAdminForm
 from shuup_cielo.models import (
     CieloConfig, CieloPaymentProcessor, DiscountPercentageBehaviorComponent
 )
-
-from shuup.admin.forms import ShuupAdminForm
-
-from django import forms
 
 
 class CieloPaymentProcessorForm(ShuupAdminForm):

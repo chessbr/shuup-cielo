@@ -6,7 +6,7 @@ python:
 install:
   - pip install -U pip
   - pip install coveralls
-  - pip install -e git+https://github.com/shuup/shuup.git@master#egg=shuup[everything]
+  - pip install -e git+https://github.com/rockho-team/shuup.git@stable#egg=shuup[everything]
   - pip install -e .
   - pip install -r requirements.txt
 script:

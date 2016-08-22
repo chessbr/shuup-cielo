@@ -11,17 +11,6 @@ from decimal import Decimal
 import logging
 import time
 
-from shuup_cielo.constants import (
-    CIELO_AUTHORIZED_STATUSES, CIELO_SERVICE_CREDIT, CIELO_UKNOWN_ERROR_MSG, CieloAuthorizationCode,
-    CieloProduct, CieloProductMatrix, CieloTransactionStatus,
-    INSTALLMENT_CHOICE_WITH_INTEREST_STRING, INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING
-)
-from shuup_cielo.forms import CieloPaymentForm
-from shuup_cielo.models import CieloOrderTransaction, CieloTransaction, InstallmentContext
-from shuup_cielo.utils import decimal_to_int_cents, safe_int
-
-from shuup.utils.i18n import format_money
-
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
@@ -35,6 +24,18 @@ from django.views.generic.edit import BaseFormView
 from cielo_webservice.exceptions import CieloRequestError
 from cielo_webservice.models import Cartao, Comercial, Pagamento, Pedido, Transacao
 from cielo_webservice.request import CieloRequest
+from shuup.front.checkout._process import CheckoutProcess
+from shuup.utils.i18n import format_money
+from shuup.utils.importing import cached_load
+from shuup_cielo.checkout import CieloCheckoutPhase
+from shuup_cielo.constants import (
+    CIELO_AUTHORIZED_STATUSES, CIELO_SERVICE_CREDIT, CIELO_UKNOWN_ERROR_MSG, CieloAuthorizationCode,
+    CieloProduct, CieloProductMatrix, CieloTransactionStatus,
+    INSTALLMENT_CHOICE_WITH_INTEREST_STRING, INSTALLMENT_CHOICE_WITHOUT_INTEREST_STRING
+)
+from shuup_cielo.forms import CieloPaymentForm
+from shuup_cielo.models import CieloOrderTransaction, CieloTransaction, InstallmentContext
+from shuup_cielo.utils import decimal_to_int_cents, safe_int
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,13 @@ class GetInstallmentsOptionsView(View):
             return HttpResponseBadRequest()
 
         try:
+            # populate the basket with all the checkout stuff
+            process = CheckoutProcess(
+                phase_specs=cached_load("SHUUP_CHECKOUT_VIEW_SPEC").phase_specs,
+                phase_kwargs=dict(request=self.request, args=self.args, kwargs=self.kwargs)
+            )
+            process.get_current_phase(CieloCheckoutPhase.identifier)
+
             basket_total = request.basket.taxful_total_price.value
         except:
             logger.exception("Basket total is not valid")

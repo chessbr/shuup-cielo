@@ -11,6 +11,12 @@ from __future__ import unicode_literals
 from decimal import Decimal
 import logging
 
+from django.contrib import messages
+from django.utils.translation import ugettext as _p
+from django.utils.translation import ugettext_lazy as _
+from django.views.generic.base import TemplateView
+
+from shuup.front.checkout import BasicServiceCheckoutPhaseProvider, CheckoutPhaseViewMixin
 from shuup_cielo.constants import (
     CIELO_AUTHORIZED_STATUSES, CIELO_DECIMAL_PRECISION, CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT,
     CIELO_UKNOWN_ERROR_MSG, CieloAuthorizationCode, CieloProduct
@@ -18,13 +24,6 @@ from shuup_cielo.constants import (
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloPaymentProcessor
 from shuup_cielo.objects import CIELO_ORDER_TRANSACTION_ID_KEY, CIELO_TRANSACTION_ID_KEY
-
-from shuup.front.checkout import BasicServiceCheckoutPhaseProvider, CheckoutPhaseViewMixin
-
-from django.contrib import messages
-from django.utils.translation import ugettext as _p
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic.base import TemplateView
 
 logger = logging.getLogger(__name__)
 

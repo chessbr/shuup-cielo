@@ -10,15 +10,14 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-from shuup_cielo.constants import CieloCardBrand, CieloProduct, CieloTransactionStatus
-from shuup_cielo.utils import decimal_to_int_cents
-
 from django.utils.timezone import now
 
 from cielo_webservice.models import (
     dict_to_autenticacao, dict_to_autorizacao, dict_to_cancelamento, dict_to_captura,
     dict_to_pagamento, dict_to_pedido, Transacao
 )
+from shuup_cielo.constants import CieloCardBrand, CieloProduct, CieloTransactionStatus
+from shuup_cielo.utils import decimal_to_int_cents
 
 PRODUCT_PRICE = Decimal(15.0)
 

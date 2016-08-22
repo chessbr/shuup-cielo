@@ -10,11 +10,10 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-from enumfields import Enum
-
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from enumfields import Enum
 
 # precisão de 2 casas decimais apenas
 CIELO_DECIMAL_PRECISION = Decimal('0.01')

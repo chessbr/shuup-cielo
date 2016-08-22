@@ -7,10 +7,9 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 
+from shuup.admin.base import OrderSection
 from shuup_cielo.constants import CieloTransactionStatus
 from shuup_cielo.models import CieloPaymentProcessor, CieloTransaction
-
-from shuup.admin.base import OrderSection
 
 
 class CieloOrderSection(OrderSection):

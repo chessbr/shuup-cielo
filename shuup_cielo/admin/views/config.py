@@ -8,15 +8,14 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
-from shuup_cielo.admin.forms import CieloConfigForm
-from shuup_cielo.models import CieloConfig
-
-from shuup.admin.utils.picotable import Column, TextFilter
-from shuup.admin.utils.views import CreateOrUpdateView, PicotableListView
-
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic.edit import DeleteView
+
+from shuup.admin.utils.picotable import Column, TextFilter
+from shuup.admin.utils.views import CreateOrUpdateView, PicotableListView
+from shuup_cielo.admin.forms import CieloConfigForm
+from shuup_cielo.models import CieloConfig
 
 
 class ConfigListView(PicotableListView):

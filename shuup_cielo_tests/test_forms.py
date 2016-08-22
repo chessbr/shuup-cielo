@@ -7,6 +7,7 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 
+from django.utils.timezone import now
 import pytest
 
 from shuup_cielo.constants import (
@@ -14,8 +15,6 @@ from shuup_cielo.constants import (
 )
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloConfig
-
-from django.utils.timezone import now
 
 
 def get_cielo_config():
