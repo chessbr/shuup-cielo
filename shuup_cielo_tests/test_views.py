@@ -29,7 +29,7 @@ from shuup.testing.mock_population import populate_if_required
 from shuup.utils.i18n import format_money
 from shuup.xtheme._theme import set_current_theme
 from shuup_cielo.constants import (
-    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CieloCardBrand, CieloProduct, CieloTransactionStatus,
+    CIELO_SERVICE_CREDIT, CieloCardBrand, CieloProduct, CieloTransactionStatus,
     InterestType
 )
 from shuup_cielo.models import (
@@ -306,7 +306,6 @@ def test_transaction_success():
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
     data = CC_VISA_1X_INFO
-    data['service'] = CIELO_SERVICE_CREDIT
 
     # No url-autenticacao
     transacao = get_in_progress_transaction(numero=1,
@@ -324,7 +323,7 @@ def test_transaction_success():
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao):
         with patch.object(CieloRequest, 'consultar', return_value=transacao):
-            with patch.object(CieloRequest, 'cancelar', return_value=transacao_cancelada):
+            with patch.object(CieloRequest, 'cancelar', return_value=transacao_cancelada) as mock_method:
 
                 response = c.post(TRANSACTION_PATH, data=data)
                 json_content = json.loads(response.content.decode("utf-8"))
@@ -332,6 +331,7 @@ def test_transaction_success():
                 assert json_content["redirect_url"].endswith(return_url_1)
 
                 t1 = CieloTransaction.objects.first()
+                assert t1.status == CieloTransactionStatus.Authorized
 
                 # request again.. the last transaction must be cancelled
                 response = c.post(TRANSACTION_PATH, data=data)
@@ -339,8 +339,8 @@ def test_transaction_success():
                 assert json_content["success"] is True
                 assert json_content["redirect_url"].endswith(return_url_2)
 
-                t1.refresh_from_db()
-                assert t1.status == CieloTransactionStatus.Cancelled
+                # deve ter invocado o método para cancelar
+                assert mock_method.called
 
                 t2 = CieloTransaction.objects.last()
                 assert t2.status == CieloTransactionStatus.Authorized
@@ -352,7 +352,6 @@ def test_transaction_success_captured():
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
     data = CC_VISA_1X_INFO
-    data['service'] = CIELO_SERVICE_DEBIT
 
     transacao1 = get_in_progress_transaction(numero=1,
                                             valor=Decimal(PRODUCT_PRICE * PRODUCT_QTNTY),
@@ -408,11 +407,14 @@ def test_transaction_success_captured():
 
     with patch.object(CieloRequest, 'autorizar', return_value=transacao2):
         with patch.object(CieloRequest, 'consultar', return_value=transacao2):
-            with patch.object(CieloRequest, 'cancelar', return_value=transacao1_cancelada):
+            with patch.object(CieloRequest, 'cancelar', return_value=transacao1_cancelada) as mocked_method:
                 response = c.post(TRANSACTION_PATH, data=data)
                 json_content = json.loads(response.content.decode("utf-8"))
                 assert json_content["success"] is True
                 assert json_content["redirect_url"].endswith(AUTH_URL)
+                
+                # cancelar must be called
+                assert mocked_method.called
 
     t2 = CieloTransaction.objects.last()
     assert t2.status == CieloTransactionStatus.InProgress
@@ -422,11 +424,6 @@ def test_transaction_success_captured():
         response = c.post(return_url_2)
         assert response.status_code == 302
         assert response.url.endswith(reverse("shuup:checkout", kwargs={"phase": "confirm"}))
-
-    # T1 is cancelled and T2 is captured
-    t1.refresh_from_db()
-    assert t1.status == CieloTransactionStatus.Cancelled
-    assert t1.authorization_lr == "00"
 
     t2.refresh_from_db()
     assert t2.status == CieloTransactionStatus.Captured
@@ -438,7 +435,6 @@ def test_transaction_not_authorized():
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
     data = CC_VISA_1X_INFO
-    data['service'] = CIELO_SERVICE_CREDIT
 
     # No url-autenticacao
     transacao = get_in_progress_transaction(numero=1,
@@ -466,7 +462,6 @@ def test_return_view_not_authorized():
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
     data = CC_VISA_1X_INFO
-    data['service'] = CIELO_SERVICE_DEBIT
 
     transacao1 = get_in_progress_transaction(numero=1,
                                             valor=Decimal(PRODUCT_PRICE * PRODUCT_QTNTY),
@@ -508,7 +503,6 @@ def test_return_view_not_identified():
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
     data = CC_VISA_1X_INFO
-    data['service'] = CIELO_SERVICE_DEBIT
 
     # it does not exist yeat
     return_url = reverse("shuup:cielo_transaction_return", kwargs={"cielo_order_pk": 1})

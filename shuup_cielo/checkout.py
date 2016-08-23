@@ -57,8 +57,7 @@ class CieloCheckoutPhase(CheckoutPhaseViewMixin, TemplateView):
         if self._has_valid_transaction():
             cielo_transaction = self.request.cielo.transaction
 
-            if cielo_transaction.refresh() and \
-                    cielo_transaction.authorization_lr in CIELO_AUTHORIZED_STATUSES:
+            if cielo_transaction.authorization_lr in CIELO_AUTHORIZED_STATUSES:
                 return True
 
             else:

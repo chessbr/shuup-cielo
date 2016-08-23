@@ -124,16 +124,7 @@ class TransactionView(BaseFormView):
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context or {}, **response_kwargs)
 
-    def get_form_kwargs(self):
-        kwargs = super(TransactionView, self).get_form_kwargs()
-        kwargs['service'] = self.request.POST.get('service', CIELO_SERVICE_CREDIT)
-        return kwargs
-
     def form_valid(self, form):
-        cc_info = form.cleaned_data
-        service = form.service
-        cielo_config = self.request.shop.cielo_config
-
         # verifica se existe alguma transação pendente na sessão
         # se sim, cancela a autorização antiga para fazer uma nova
         if self.request.cielo.transaction:
@@ -149,10 +140,14 @@ class TransactionView(BaseFormView):
         )
         process.get_current_phase(CieloCheckoutPhase.identifier)
         order_total = self.request.basket.taxful_total_price.value
+        service = self.request.basket.payment_method.choice_identifier
 
+        cc_info = form.cleaned_data
         transaction_total = order_total
         interest_amount = Decimal()
         installments = safe_int(cc_info['installments'])
+
+        cielo_config = self.request.shop.cielo_config
 
         produto = CieloProduct.Credit
 
@@ -181,7 +176,7 @@ class TransactionView(BaseFormView):
 
         cartao = Cartao(numero=safe_int(cc_info['cc_number']),
                         validade=safe_int("{0}{1}".format(cc_info['cc_valid_year'], cc_info['cc_valid_month'])),
-                        indicador=1,  # sempre será necessário o digito verificador
+                        indicador=1,  # sempre sera necessario o digito verificador
                         codigo_seguranca=safe_int(cc_info['cc_security_code']),
                         nome_portador=cc_info['cc_holder'])
 
