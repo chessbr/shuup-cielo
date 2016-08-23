@@ -71,7 +71,6 @@ class CieloCheckoutPhase(CheckoutPhaseViewMixin, TemplateView):
 
         self.request.cielo.rollback()
         self.request.cielo.clear()
-
         return False
 
     def _has_valid_transaction(self):

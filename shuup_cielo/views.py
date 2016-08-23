@@ -142,6 +142,12 @@ class TransactionView(BaseFormView):
             except:
                 logger.exception(_("Failed to cancel old Cielo transaction"))
 
+        # populate the basket with all the checkout stuff
+        process = CheckoutProcess(
+            phase_specs=cached_load("SHUUP_CHECKOUT_VIEW_SPEC").phase_specs,
+            phase_kwargs=dict(request=self.request, args=self.args, kwargs=self.kwargs)
+        )
+        process.get_current_phase(CieloCheckoutPhase.identifier)
         order_total = self.request.basket.taxful_total_price.value
 
         transaction_total = order_total
