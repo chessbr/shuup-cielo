@@ -38,7 +38,7 @@ from shuup_cielo.models import (
 from shuup_cielo_tests import (
     AUTH_URL, CC_VISA_1X_INFO, get_approved_transaction, get_cancelled_transaction,
     get_captured_transaction, get_in_progress_transaction
-)
+, patch_cielo_request)
 from shuup_cielo_tests.test_checkout import get_payment_provider
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
@@ -118,6 +118,7 @@ def _get_configured_basket_client():
 
 @pytest.mark.django_db
 def test_get_installments_options_rest():
+    patch_cielo_request()
     shop = get_default_shop()
     c = SmartClient()
 
@@ -165,6 +166,7 @@ def test_get_installments_3x_no_intereset():
     """
         Max 3 installs with no intereset
     """
+    patch_cielo_request()
     shop = get_default_shop()
     create_default_order_statuses()
     populate_if_required()
@@ -202,6 +204,7 @@ def test_get_installments_9x_with_simples_intereset():
         Max 9 installs with SIMPLE intereset
         interest_rate = 4.00%
     """
+    patch_cielo_request()
     shop = get_default_shop()
     create_default_order_statuses()
     populate_if_required()
@@ -242,6 +245,7 @@ def test_get_installments_12x_with_simples_intereset():
         interest_rate = 2.30%
         min_installment_amount = 30.00
     """
+    patch_cielo_request()
     shop = get_default_shop()
     create_default_order_statuses()
     populate_if_required()
@@ -278,6 +282,8 @@ def test_get_installments_cc_does_not_allow_installments():
         interest_rate = 4.00%
         Credit card does not allow installments
     """
+    patch_cielo_request()
+
     shop = get_default_shop()
     create_default_order_statuses()
     populate_if_required()
@@ -302,6 +308,8 @@ def test_get_installments_cc_does_not_allow_installments():
 
 @pytest.mark.django_db
 def test_transaction_success():
+    patch_cielo_request()
+
     c = _get_configured_basket_client()
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
@@ -339,6 +347,8 @@ def test_transaction_success():
                 assert json_content["success"] is True
                 assert json_content["redirect_url"].endswith(return_url_2)
 
+                t1.refresh_from_db()
+                assert t1.status == CieloTransactionStatus.Cancelled
                 # deve ter invocado o método para cancelar
                 assert mock_method.called
 
@@ -348,6 +358,7 @@ def test_transaction_success():
 
 @pytest.mark.django_db
 def test_transaction_success_captured():
+    patch_cielo_request()
     c = _get_configured_basket_client()
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
@@ -412,7 +423,7 @@ def test_transaction_success_captured():
                 json_content = json.loads(response.content.decode("utf-8"))
                 assert json_content["success"] is True
                 assert json_content["redirect_url"].endswith(AUTH_URL)
-                
+
                 # cancelar must be called
                 assert mocked_method.called
 
@@ -425,12 +436,18 @@ def test_transaction_success_captured():
         assert response.status_code == 302
         assert response.url.endswith(reverse("shuup:checkout", kwargs={"phase": "confirm"}))
 
+    # T1 is cancelled and T2 is captured
+    t1.refresh_from_db()
+    assert t1.status == CieloTransactionStatus.Cancelled
+    assert t1.authorization_lr == "00"
+
     t2.refresh_from_db()
     assert t2.status == CieloTransactionStatus.Captured
 
 
 @pytest.mark.django_db
 def test_transaction_not_authorized():
+    patch_cielo_request()
     c = _get_configured_basket_client()
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
@@ -458,6 +475,7 @@ def test_transaction_not_authorized():
 
 @pytest.mark.django_db
 def test_return_view_not_authorized():
+    patch_cielo_request()
     c = _get_configured_basket_client()
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)
@@ -499,6 +517,7 @@ def test_return_view_not_authorized():
 
 @pytest.mark.django_db
 def test_return_view_not_identified():
+    patch_cielo_request()
     c = _get_configured_basket_client()
     CieloConfig.objects.create(shop=get_default_shop(),
                                max_installments=10)

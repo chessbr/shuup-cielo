@@ -173,7 +173,7 @@ class CieloTransaction(models.Model):
 
         :return: wheter the synchronization was successful
         '''
-        
+
         # consuta a transação
         cielo_request = self._get_cielo_request()
 

@@ -18,6 +18,8 @@ from cielo_webservice.models import (
 )
 from shuup_cielo.constants import CieloCardBrand, CieloProduct, CieloTransactionStatus
 from shuup_cielo.utils import decimal_to_int_cents
+from mock import patch
+from cielo_webservice.request import CieloRequest
 
 PRODUCT_PRICE = Decimal(15.0)
 
@@ -114,3 +116,13 @@ def get_cancelled_transaction(transacao):
         }
     })
     return transacao
+
+
+def patch_cielo_request():
+    capturar_patcher = patch.object(CieloRequest, 'capturar', return_value=None)
+    autorizar_patcher = patch.object(CieloRequest, 'autorizar', return_value=None)
+    cancelar_patcher = patch.object(CieloRequest, 'cancelar', return_value=None)
+
+    capturar_patcher.start()
+    autorizar_patcher.start()
+    cancelar_patcher.start()

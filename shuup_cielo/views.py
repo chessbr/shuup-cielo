@@ -24,10 +24,8 @@ from django.views.generic.edit import BaseFormView
 from cielo_webservice.exceptions import CieloRequestError
 from cielo_webservice.models import Cartao, Comercial, Pagamento, Pedido, Transacao
 from cielo_webservice.request import CieloRequest
-from shuup.front.checkout._process import CheckoutProcess
 from shuup.utils.i18n import format_money
-from shuup.utils.importing import cached_load
-from shuup_cielo.checkout import CieloCheckoutPhase
+from shuup.utils.importing import cached_load, load
 from shuup_cielo.constants import (
     CIELO_AUTHORIZED_STATUSES, CIELO_SERVICE_CREDIT, CIELO_UKNOWN_ERROR_MSG, CieloAuthorizationCode,
     CieloProduct, CieloProductMatrix, CieloTransactionStatus,
@@ -36,8 +34,37 @@ from shuup_cielo.constants import (
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloOrderTransaction, CieloTransaction, InstallmentContext
 from shuup_cielo.utils import decimal_to_int_cents, safe_int
+from shuup.front.checkout._storage import CheckoutPhaseStorage
 
 logger = logging.getLogger(__name__)
+
+
+def _configure_basket(request):
+    """
+    Search for some needed keys in the checkout phases storages
+    """
+
+    # (src key, destination key) pair
+    search_keys = [
+        ('payment_method_id', 'payment_method_id'),
+        ('shipping_method_id', 'shipping_method_id'),
+        ('shipping', 'shipping_address'),
+        ('shipping_extra', 'shipping_address_extra'),
+        ('payment', 'payment_address'),
+        ('payment_extra', 'payment_address_extra'),
+    ]
+
+    for phase in cached_load("SHUUP_CHECKOUT_VIEW_SPEC").phase_specs:
+        phase_class = load(phase)
+
+        storage = CheckoutPhaseStorage(request, phase_class.identifier)
+
+        for key, dst_key in search_keys:
+            value = storage.get(key)
+
+            # key found, set it to request.basket on dst_key
+            if value:
+                setattr(request.basket, dst_key, value)
 
 
 class GetInstallmentsOptionsView(View):
@@ -57,11 +84,7 @@ class GetInstallmentsOptionsView(View):
 
         try:
             # populate the basket with all the checkout stuff
-            process = CheckoutProcess(
-                phase_specs=cached_load("SHUUP_CHECKOUT_VIEW_SPEC").phase_specs,
-                phase_kwargs=dict(request=self.request, args=self.args, kwargs=self.kwargs)
-            )
-            process.get_current_phase(CieloCheckoutPhase.identifier)
+            _configure_basket(request)
 
             basket_total = request.basket.taxful_total_price.value
         except:
@@ -134,11 +157,7 @@ class TransactionView(BaseFormView):
                 logger.exception(_("Failed to cancel old Cielo transaction"))
 
         # populate the basket with all the checkout stuff
-        process = CheckoutProcess(
-            phase_specs=cached_load("SHUUP_CHECKOUT_VIEW_SPEC").phase_specs,
-            phase_kwargs=dict(request=self.request, args=self.args, kwargs=self.kwargs)
-        )
-        process.get_current_phase(CieloCheckoutPhase.identifier)
+        _configure_basket(self.request)
         order_total = self.request.basket.taxful_total_price.value
         service = self.request.basket.payment_method.choice_identifier
 

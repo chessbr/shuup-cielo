@@ -39,7 +39,7 @@ from shuup_cielo.utils import decimal_to_int_cents
 from shuup_cielo_tests import (
     AUTH_URL, CC_VISA_1X_INFO, CC_VISA_4X_INFO, get_approved_transaction, get_captured_transaction,
     get_in_progress_transaction, PRODUCT_PRICE
-)
+, patch_cielo_request)
 from shuup_tests.front.test_checkout_flow import fill_address_inputs
 from shuup_tests.utils import SmartClient
 
@@ -51,6 +51,7 @@ def get_cielo_config(**kwargs):
     return CieloConfig.objects.get_or_create(shop=get_default_shop(), **kwargs)[0]
 
 def initialize():
+    patch_cielo_request()
     get_default_shop()
     get_cielo_config()
     set_current_theme('shuup.themes.classic_gray')
