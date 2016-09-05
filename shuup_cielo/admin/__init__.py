@@ -109,9 +109,9 @@ class CieloConfigModule(CieloBaseAdminModule):
     model = CieloConfig
 
     icon = "fa fa-cogs"
-    breadcrumbs_menu_entry = MenuEntry(name, url="shuup_admin:cielo.config.list")
-    url_name_prefix = "shuup_admin:cielo.config"
+    breadcrumbs_menu_entry = MenuEntry(name, url="shuup_admin:cielo_config.list")
+    url_name_prefix = "shuup_admin:cielo_config"
     url_prefix = "^cielo/config"
     view_template = "shuup_cielo.admin.views.config.Config%sView"
-    name_template = "cielo.config.%s"
-    menu_entry_url = "shuup_admin:cielo.config.list"
+    name_template = "cielo_config.%s"
+    menu_entry_url = "shuup_admin:cielo_config.list"

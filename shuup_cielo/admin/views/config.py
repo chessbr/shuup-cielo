@@ -20,7 +20,7 @@ from shuup_cielo.models import CieloConfig
 
 class ConfigListView(PicotableListView):
     model = CieloConfig
-    columns = [
+    default_columns = [
         Column("shop", _("Shop"), filter_config=TextFilter()),
         Column("ec_num", _("Affiliation number"), filter_config=TextFilter()),
     ]
@@ -35,4 +35,4 @@ class ConfigEditView(CreateOrUpdateView):
 
 class ConfigDeleteView(DeleteView):
     model = CieloConfig
-    success_url = reverse_lazy("shuup_admin:cielo.config.list")
+    success_url = reverse_lazy("shuup_admin:cielo_config.list")

@@ -8,10 +8,9 @@ Shuup Cielo
 Cielo gateway payment add-on for Shuup
 
 ## Compatibility
-* Shuup v0.4.0
+* Shuup v0.4.5
 * [Tested on Python 2.7, 3.4 and 3.5](https://travis-ci.org/rockho-team/shuup-cielo)
-* [x] Cielo Webservice specification v 1.5 (through Cielo API https://github.com/allisson/python-cielo-webservice)
-* [ ] Cielo Webservice specification v 3.0 
+* [x] Cielo Webservice specification v 1.5
 
 Copyright
 ---------

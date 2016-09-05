@@ -50,7 +50,7 @@
 
 {{ cielo_info_row(_("Authorization LR"), transaction.authorization_lr) }}
 {{ cielo_info_row(_("Authorization NSU"), transaction.authorization_nsu) }}
-{{ cielo_info_row(_("International?"), transaction.international) }}
+{{ cielo_info_row(_("International?"), _("yes") if transaction.international else _("no")) }}
 
 {% if transaction.authorization_date %}
 {{ cielo_info_row(_("Authorization date"), transaction.authorization_date|datetime) }}
