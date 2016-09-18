@@ -95,7 +95,7 @@ def test_form_validate():
 
 
     # amex aceita só 4 digitos no codigo verificador
-    form = CieloPaymentForm(CIELO_SERVICE_DEBIT, data={'cc_number':'4012001038443335',
+    form = CieloPaymentForm(CIELO_SERVICE_CREDIT, data={'cc_number':'4012001038443335',
                                                        'cc_brand':CieloCardBrand.Amex,
                                                        'cc_holder':'portador',
                                                        'cc_security_code':'122',

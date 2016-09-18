@@ -280,20 +280,20 @@ CieloProductMatrix = {
 
 
 CIELO_CREDITCARD_BRAND_CHOICES = (
-    (CieloCardBrand.Visa, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/visa.png')))),
-    (CieloCardBrand.Mastercard, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/mastercard.png')))),
-    (CieloCardBrand.Elo, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/elo.png')))),
-    (CieloCardBrand.Amex, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/amex.png')))),
-    (CieloCardBrand.Diners, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/diners.png')))),
-    (CieloCardBrand.Aura, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/aura.png')))),
-    (CieloCardBrand.Discover, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/discover.png')))),
-    (CieloCardBrand.Jcb, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/jcb.png')))),
+    (CieloCardBrand.Visa, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/visa.png')))),
+    (CieloCardBrand.Mastercard, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/mastercard.png')))),
+    (CieloCardBrand.Elo, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/elo.png')))),
+    (CieloCardBrand.Amex, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/amex.png')))),
+    (CieloCardBrand.Diners, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/diners.png')))),
+    (CieloCardBrand.Aura, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/aura.png')))),
+    (CieloCardBrand.Discover, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/discover.png')))),
+    (CieloCardBrand.Jcb, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/jcb.png')))),
 )
 
 
 CIELO_DEBITCARD_BRAND_CHOICES = (
-    (CieloCardBrand.Visa, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/visa_electron.png')))),
-    (CieloCardBrand.Mastercard, mark_safe('<img width="50" height="50" src="{0}">'.format(static('img/maestro.png')))),
+    (CieloCardBrand.Visa, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/visa_electron.png')))),
+    (CieloCardBrand.Mastercard, mark_safe('<img class="cc-brand-choice" src="{0}">'.format(static('img/maestro.png')))),
 )
 
 

@@ -24,27 +24,37 @@ from shuup_cielo.utils import is_cc_valid, safe_int
 
 class CieloPaymentForm(forms.Form):
     cc_brand = forms.ChoiceField(label=_('Brand'),
-                                 required=True,
                                  choices=[],
+                                 required=False,
                                  widget=forms.RadioSelect())
 
     cc_holder = forms.CharField(label=_('Holder'),
                                 required=True,
                                 max_length=50,
-                                help_text=_("As printed on the card"))
+                                widget=forms.TextInput(attrs={'placeholder': _("As printed on the card")}))
 
     cc_number = forms.CharField(label=_('Card number'),
                                 required=True,
-                                max_length=20)
+                                max_length=20,
+                                widget=forms.TextInput(attrs={'type':'tel'}))
 
-    cc_security_code = forms.CharField(label=_('Security code'), required=True,
-                                       max_length=4, min_length=3)
+    cc_security_code = forms.CharField(label=_('Security code'),
+                                       required=True,
+                                       max_length=4,
+                                       min_length=3,
+                                       widget=forms.TextInput(attrs={'type':'tel'}))
 
-    cc_valid_year = forms.CharField(label=_('Valid year'), required=True,
-                                    max_length=4, min_length=4)
+    cc_valid_year = forms.CharField(label=_('Expiration year'),
+                                    required=True,
+                                    max_length=4,
+                                    min_length=4,
+                                    widget=forms.TextInput(attrs={'type':'tel'}))
 
-    cc_valid_month = forms.CharField(label=_('Valid month'), required=True,
-                                     max_length=2, min_length=2)
+    cc_valid_month = forms.CharField(label=_('Expiration month'),
+                                     required=True,
+                                     max_length=2,
+                                     min_length=2,
+                                     widget=forms.TextInput(attrs={'type':'tel'}))
 
     installments = forms.CharField(label=_('Number of installments'),
                                    required=True,
@@ -73,10 +83,16 @@ class CieloPaymentForm(forms.Form):
 
         return cc_number
 
+
     def clean(self):
         cleaned = super(CieloPaymentForm, self).clean()
+        cc_brand = self.cleaned_data.get('cc_brand')
 
-        product_info = CieloProductMatrix.get(cleaned.get('cc_brand'), {})
+        if not cc_brand in CieloProductMatrix.keys():
+            self.add_error('cc_brand', _('Invalid card brand'))
+            return cleaned
+
+        product_info = CieloProductMatrix.get(cc_brand, {})
 
         # Bandeira não aceita parcelado, força apenas 1 parcela
         if safe_int(cleaned.get('installments', 1)) > 1 and not product_info.get(CieloProduct.InstallmentCredit):
