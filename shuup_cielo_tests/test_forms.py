@@ -11,7 +11,7 @@ from django.utils.timezone import now
 import pytest
 
 from shuup_cielo.constants import (
-    CIELO_SERVICE_CREDIT, CIELO_SERVICE_DEBIT, CieloAuthorizationType, CieloCardBrand, InterestType
+    CIELO_SERVICE_CREDIT, CieloAuthorizationType, CieloCardBrand, InterestType
 )
 from shuup_cielo.forms import CieloPaymentForm
 from shuup_cielo.models import CieloConfig
@@ -54,7 +54,7 @@ def test_form_validate():
                                            'cc_holder':'portador',
                                            'cc_security_code':'122',
                                            'cc_valid_year': now().year + 1,
-                                           'cc_valid_month': "%2d" % int(now().month),
+                                           'cc_valid_month': "%02d" % int(now().month),
                                            'installments': 2})
     assert form.is_valid() == True
     assert len(form.non_field_errors()) == 0
@@ -65,7 +65,7 @@ def test_form_validate():
                                                         'cc_holder':'portador',
                                                         'cc_security_code':'122',
                                                         'cc_valid_year': now().year + 1,
-                                                        'cc_valid_month': "%2d" % int(now().month),
+                                                        'cc_valid_month': "%02d" % int(now().month),
                                                         'installments': 2})
     assert form.is_valid() == True
     assert len(form.non_field_errors()) == 0
@@ -77,7 +77,7 @@ def test_form_validate():
                                                         'cc_holder':'portador',
                                                         'cc_security_code':'122',
                                                         'cc_valid_year': now().year + 1,
-                                                        'cc_valid_month': "%2d" % int(now().month),
+                                                        'cc_valid_month': "%20d" % int(now().month),
                                                         'installments': 2})
     assert form.is_valid() == False
     assert len(form.non_field_errors()) == 0
@@ -88,7 +88,7 @@ def test_form_validate():
                                                         'cc_holder':'portador',
                                                         'cc_security_code':'122',
                                                         'cc_valid_year': now().year + 1,
-                                                        'cc_valid_month': "%2d" % int(now().month),
+                                                        'cc_valid_month': "%02d" % int(now().month),
                                                         'installments': 1})
     assert form.is_valid() == True
     assert len(form.non_field_errors()) == 0
@@ -100,7 +100,7 @@ def test_form_validate():
                                                        'cc_holder':'portador',
                                                        'cc_security_code':'122',
                                                        'cc_valid_year': now().year + 1,
-                                                       'cc_valid_month': "%2d" % int(now().month),
+                                                       'cc_valid_month': "%02d" % int(now().month),
                                                        'installments': 2})
     assert form.is_valid() == False
     assert len(form.non_field_errors()) == 0
